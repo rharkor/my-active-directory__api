@@ -2,7 +2,7 @@
 @url = http://localhost:3001/
 
 // Change the auth token with the one you get from the login request
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsImlhdCI6MTY4Nzk0OTcxNiwiZXhwIjoxNjk4MzE3NzE2fQ.5XGEqjFqigws-mRhjn_sSzGDbJSVdyX7iaslC_O27Bg
+@authToken = 
 
 ## Status
 ### Test the status of the api

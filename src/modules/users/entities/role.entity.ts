@@ -16,7 +16,12 @@ class Role {
   @Column({
     nullable: true,
   })
-  description: string;
+  description?: string;
+
+  @Column({
+    default: true,
+  })
+  deletable: boolean;
 }
 
 export default Role;

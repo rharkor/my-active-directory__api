@@ -34,9 +34,8 @@
     "migrate:down": "npm run typeorm:revert-migration",
     "make:migration": "npm run typeorm:generate-migration",
     "create:migration": "npm run typeorm:create-migration",
-    "fixtures": "fixtures-ts-node-commonjs load ./src/database/fixtures/base.yml -d ./src/database/database.configuration.ts",
     "sql:delete": "ts-node ./src/database/scripts/delete-all",
-    "fixtures:clean": "npm run sql:delete && npm run fixtures"
+    "sql:default-roles": "ts-node ./src/database/scripts/default-roles"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -47,7 +46,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/schedule": "^2.2.1",
     "@nestjs/swagger": "^6.3.0",
-    "@nestjs/throttler": "^4.0.0",
+    "@nestjs/throttler": "^4.1.0",
     "@nestjs/typeorm": "^9.0.1",
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
