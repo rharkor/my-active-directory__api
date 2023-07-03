@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import User from './user.entity';
 
 @Entity()
 class Role {
@@ -22,6 +23,9 @@ class Role {
     default: true,
   })
   deletable: boolean;
+
+  @ManyToMany(() => User, (user) => user.roles)
+  users?: User[];
 }
 
 export default Role;

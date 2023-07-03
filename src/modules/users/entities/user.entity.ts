@@ -48,7 +48,7 @@ class User {
   })
   metadata?: Record<string, unknown>;
 
-  @ManyToMany(() => Role, undefined, {
+  @ManyToMany(() => Role, (role) => role.users, {
     eager: true,
   })
   @JoinTable()

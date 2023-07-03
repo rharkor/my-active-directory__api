@@ -5,7 +5,6 @@ import {
   Post,
   Body,
   Request,
-  Patch,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './meta/public.meta';
@@ -17,8 +16,6 @@ import { LoginUserDto } from './modules/users/dtos/loginUser.dto';
 import { CreateUserDto } from './modules/users/dtos/createUser.dto';
 import { CreateFirstUserDto } from './modules/users/dtos/createFirstUser.dto';
 import { RequestWithServiceAccount, RequestWithUser } from './types/auth';
-import { UsersService } from './modules/users/users.service';
-import { UpdateUserDto } from './modules/users/dtos/updateUser.dto';
 import { ApiAvailable } from './meta/api.meta';
 
 @Controller()
@@ -26,7 +23,6 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private authService: AuthService,
-    private userService: UsersService,
   ) {}
 
   @Get()
@@ -56,15 +52,6 @@ export class AppController {
     @Body() user: CreateUserDto,
   ) {
     return this.authService.register(user, req);
-  }
-
-  @ApiAvailable()
-  @Patch('auth/update')
-  async update(
-    @Request() req: RequestWithUser | RequestWithServiceAccount,
-    @Body() user: UpdateUserDto,
-  ) {
-    return this.userService.update(user, req);
   }
 
   @UseGuards(JwtAuthGuard)

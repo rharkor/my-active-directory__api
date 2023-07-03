@@ -10,10 +10,9 @@
 GET {{ url }}
 
 ##* BASICS
-## AUTH
 @authUrl = {{ url }}/auth
 
-### Register first user
+###? Register first user
 POST {{ authUrl }}/register-fist-time
 Content-Type: application/json
 
@@ -23,11 +22,11 @@ Content-Type: application/json
   "password": "Azerty1234!"
 }
 
-### Get profile
+###? Get profile
 GET {{ authUrl }}/profile
 Authorization: Bearer {{ authToken }}
 
-### Login
+###? Login
 POST {{ authUrl }}/login
 Content-Type: application/json
 
@@ -36,13 +35,12 @@ Content-Type: application/json
   "password": "Azerty1234!"
 }
 
-### Update
-PATCH {{ authUrl }}/update
+###? Update
+PATCH {{ url }}/users/7
 Authorization: Bearer {{ authToken }}
 Content-Type: application/json
 
 {
-  "id": 7,
   "firstName": "John",
   "lastName": "Doe",
   "metadata": {
@@ -51,7 +49,7 @@ Content-Type: application/json
 }
 
 
-### Create a new user with role admin
+###? Create a new user with role admin
 POST {{ url }}/auth/register
 Authorization: Bearer {{ authToken }}
 Content-Type: application/json
@@ -62,7 +60,7 @@ Content-Type: application/json
   "roles": ["admin"]
 }
 
-### Create a service-account
+###? Create a service-account
 POST {{ url }}/service-account
 Authorization: Bearer {{ authTokenAdmin }}
 Content-Type: application/json
@@ -71,7 +69,7 @@ Content-Type: application/json
   "name": "service-account1"
 }
 
-### Get all service-accounts
+###? Get all service-accounts
 GET {{ url }}/service-account
 Authorization: Bearer {{ authTokenAdmin }}
 
@@ -80,7 +78,7 @@ Authorization: Bearer {{ authTokenAdmin }}
 
 @serviceAccountToken = 2572bf1d-48f6-4e6f-85fb-9f5596e4186d
 
-### Create a user with role test
+###? Create a user with role test
 POST {{ url }}/auth/register
 X-Api-Key: {{ serviceAccountToken }}
 Content-Type: application/json
@@ -91,19 +89,19 @@ Content-Type: application/json
   "roles": ["test"]
 }
 
-### Get all users
+###? Get all users
 GET {{ url }}/users
 X-Api-Key: {{ serviceAccountToken }}
 
-### Get one user
+###? Get one user
 GET {{ url }}/users/7
 X-Api-Key: {{ serviceAccountToken }}
 
-### Delete one user
+###? Delete one user
 DELETE {{ url }}/users/8
 X-Api-Key: {{ serviceAccountToken }}
 
-### Update one user
+###? Update one user
 PATCH {{ authUrl }}/update
 X-Api-Key: {{ serviceAccountToken }}
 Content-Type: application/json
@@ -117,7 +115,7 @@ Content-Type: application/json
   }
 }
 
-### The user can login
+###? The user can login
 POST {{ authUrl }}/login
 Content-Type: application/json
 
@@ -128,12 +126,15 @@ Content-Type: application/json
 
 @userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiZW1haWwiOiJ1c2VyQHVzZXIuY29tIiwidXNlcm5hbWUiOm51bGwsImZpcnN0TmFtZSI6IkpvaCIsImxhc3ROYW1lIjoiRG9lIiwibWV0YWRhdGEiOnsiYWdlIjoyMH0sInJvbGVzIjpbXSwiaWF0IjoxNjg4MTM0NTI4LCJleHAiOjE2OTg1MDI1Mjh9.ayCqWawbeuINg4ge0eX4CUgR4w9-SE0mNC8yvnB5IOs
 
-### Get profile
+###? Get profile
 GET {{ authUrl }}/profile
 Authorization: Bearer {{ userToken }}
 
 
+###? Get roles of the user
+GET {{ url }}/users/7/roles
+X-Api-Key: {{ serviceAccountToken }}
 
-
-##* External services
-
+###? Get roles with filter
+GET {{ url }}/users/7/roles?filter.id=$eq:2
+X-Api-Key: {{ serviceAccountToken }}

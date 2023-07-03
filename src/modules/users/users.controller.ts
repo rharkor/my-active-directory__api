@@ -5,10 +5,15 @@ import {
   Param,
   ParseIntPipe,
   Request,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiAvailable } from '@/meta/api.meta';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
+import { UpdateUserDto } from './dtos/updateUser.dto';
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
+import Role from './entities/role.entity';
 
 @Controller('users')
 export class UsersController {
@@ -16,8 +21,17 @@ export class UsersController {
 
   @Get()
   @ApiAvailable()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Paginate() query: PaginateQuery) {
+    return this.usersService.findAll(query);
+  }
+
+  @Get(':id/roles')
+  @ApiAvailable()
+  findRoles(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ): Promise<Paginated<Role>> {
+    return this.usersService.findRoles(id, query);
   }
 
   @Get(':id')
@@ -26,6 +40,16 @@ export class UsersController {
     return this.usersService.findOne({
       id,
     });
+  }
+
+  @ApiAvailable()
+  @Patch(':id')
+  async update(
+    @Request() req: RequestWithUser | RequestWithServiceAccount,
+    @Body() user: UpdateUserDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.usersService.update(id, user, req);
   }
 
   @Delete(':id')

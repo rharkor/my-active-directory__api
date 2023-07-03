@@ -7,6 +7,7 @@ import Role from './entities/role.entity';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
+import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,9 @@ export class UsersService {
     where: FindOptionsWhere<User> | FindOptionsWhere<User>[] | undefined,
     withPassword = false,
   ): Promise<User | null> {
+    let value: User | null;
     if (withPassword)
-      return this.userRepository.findOne({
+      value = await this.userRepository.findOne({
         where,
         select: [
           'id',
@@ -35,11 +37,26 @@ export class UsersService {
           'roles',
         ],
       });
-    return this.userRepository.findOne({ where });
+    value = await this.userRepository.findOne({ where });
+
+    //? Lmit the number of roles to 100
+    if (value && value.roles && (value.roles.length ?? 0) > 100)
+      value.roles = value.roles.slice(0, 100);
+
+    return value;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(query: PaginateQuery): Promise<Paginated<User>> {
+    return paginate<User>(query, this.userRepository, {
+      sortableColumns: ['id', 'email', 'username', 'firstName', 'lastName'],
+      filterableColumns: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
   }
 
   async findUser(
@@ -49,6 +66,25 @@ export class UsersService {
     if (email) return this.findOne({ email }, withPassword);
     if (username) return this.findOne({ username }, withPassword);
     return null;
+  }
+
+  async findRoles(id: number, query: PaginateQuery): Promise<Paginated<Role>> {
+    //? Select all roles that have the user with the given id
+    const qb = this.roleRepository
+      .createQueryBuilder('role')
+      .leftJoin('role.users', 'user')
+      .where('user.id = :id', { id });
+
+    return paginate<Role>(query, qb, {
+      sortableColumns: ['name'],
+      filterableColumns: {
+        name: true,
+        displayName: true,
+        description: true,
+        id: true,
+        deletable: true,
+      },
+    });
   }
 
   async noUsers(): Promise<boolean> {
@@ -61,6 +97,7 @@ export class UsersService {
   }
 
   async update(
+    id: number,
     user: UpdateUserDto,
     req: RequestWithUser | RequestWithServiceAccount,
   ): Promise<User> {
@@ -71,13 +108,13 @@ export class UsersService {
     if (highestRole === 'user') {
       if (!('user' in req))
         throw new BadRequestException('You cannot update other users');
-      if (req.user.id !== user.id)
+      if (req.user.id !== id)
         throw new BadRequestException('You cannot update other users');
     }
 
     const userObject = await this.userRepository.findOne({
       where: {
-        id: user.id,
+        id,
       },
     });
     if (!userObject) throw new BadRequestException('User not found');

@@ -4,15 +4,11 @@ import {
   IsObject,
   IsEmail,
   MinLength,
-  IsNumber,
 } from 'class-validator';
 import Role from '../entities/role.entity';
 import { DeepPartial } from 'typeorm';
 
 export class UpdateUserDto {
-  @IsNumber()
-  id: number;
-
   @IsOptional()
   @IsString()
   @IsEmail()
