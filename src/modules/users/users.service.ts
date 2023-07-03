@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dtos/updateUser.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -37,7 +38,7 @@ export class UsersService {
           'roles',
         ],
       });
-    value = await this.userRepository.findOne({ where });
+    else value = await this.userRepository.findOne({ where });
 
     //? Lmit the number of roles to 100
     if (value && value.roles && (value.roles.length ?? 0) > 100)
@@ -126,7 +127,11 @@ export class UsersService {
       highestRole !== 'super-admin'
     )
       throw new BadRequestException('You cannot update other admins');
-    return this.userRepository.save({ ...userObject, ...user });
+
+    //? Encrypt password if it is provided
+    if (user.password) user.password = await hash(user.password, 10);
+
+    return this.userRepository.save({ id: userObject.id, ...user });
   }
 
   async addRole(user: User, role: string): Promise<User> {

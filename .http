@@ -41,11 +41,7 @@ Authorization: Bearer {{ authToken }}
 Content-Type: application/json
 
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "metadata": {
-    "age": 20
-  }
+  "password": "Azerty1234!"
 }
 
 
