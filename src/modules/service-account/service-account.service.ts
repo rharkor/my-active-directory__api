@@ -26,6 +26,7 @@ export class ServiceAccountService {
   }
 
   findApiKey(apiKey: string) {
+    if (!apiKey) return Promise.resolve(null);
     return this.serviceAccountRepository.findOne({
       where: {
         token: apiKey,

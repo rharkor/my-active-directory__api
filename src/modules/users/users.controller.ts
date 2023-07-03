@@ -13,11 +13,15 @@ import { ApiAvailable } from '@/meta/api.meta';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
-import Role from './entities/role.entity';
+import Role from '../roles/entities/role.entity';
+import { RolesService } from '../roles/roles.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly rolesService: RolesService,
+  ) {}
 
   @Get()
   @ApiAvailable()
@@ -31,7 +35,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
   ): Promise<Paginated<Role>> {
-    return this.usersService.findRoles(id, query);
+    return this.rolesService.findRoles(id, query);
   }
 
   @Get(':id')

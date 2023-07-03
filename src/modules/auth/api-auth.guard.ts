@@ -13,7 +13,7 @@ export class ApiAuthGuard {
       IS_API_AVAILABLE,
       [context.getHandler(), context.getClass()],
     );
-    if (isApiAvailable) {
+    if (isApiAvailable && req.headers['x-api-key']) {
       const api = await this.authService.validateApi(
         req.headers['x-api-key'] as string,
       );

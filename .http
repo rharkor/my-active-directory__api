@@ -13,7 +13,7 @@ GET {{ url }}
 @authUrl = {{ url }}/auth
 
 ###? Register first user
-POST {{ authUrl }}/register-fist-time
+POST {{ authUrl }}/register/init
 Content-Type: application/json
 
 {
@@ -56,6 +56,14 @@ Content-Type: application/json
   "roles": ["admin"]
 }
 
+###? Get all users
+GET {{ url }}/users
+Authorization: Bearer {{ authToken }}
+
+###? Get one user
+GET {{ url }}/users/17
+Authorization: Bearer {{ authToken }}
+
 ###? Create a service-account
 POST {{ url }}/service-account
 Authorization: Bearer {{ authTokenAdmin }}
@@ -69,6 +77,10 @@ Content-Type: application/json
 GET {{ url }}/service-account
 Authorization: Bearer {{ authTokenAdmin }}
 
+###? Delete one user
+DELETE {{ url }}/users/16
+Authorization: Bearer {{ authTokenAdmin }}
+
 
 ##* MAD
 
@@ -80,9 +92,14 @@ X-Api-Key: {{ serviceAccountToken }}
 Content-Type: application/json
 
 {
-  "email": "user@user.com",
+  "email": "user2@user.com",
   "password": "Azerty1234!",
-  "roles": ["test"]
+  "roles": ["test"],
+  "firstName": "John",
+  "lastName": "Doe",
+  "metadata": {
+    "age": 20
+  }
 }
 
 ###? Get all users
@@ -94,7 +111,7 @@ GET {{ url }}/users/7
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Delete one user
-DELETE {{ url }}/users/8
+DELETE {{ url }}/users/11
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Update one user
@@ -120,7 +137,7 @@ Content-Type: application/json
   "password": "Azerty1234!"
 }
 
-@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiZW1haWwiOiJ1c2VyQHVzZXIuY29tIiwidXNlcm5hbWUiOm51bGwsImZpcnN0TmFtZSI6IkpvaCIsImxhc3ROYW1lIjoiRG9lIiwibWV0YWRhdGEiOnsiYWdlIjoyMH0sInJvbGVzIjpbXSwiaWF0IjoxNjg4MTM0NTI4LCJleHAiOjE2OTg1MDI1Mjh9.ayCqWawbeuINg4ge0eX4CUgR4w9-SE0mNC8yvnB5IOs
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAdXNlci5jb20iLCJmaXJzdE5hbWUiOiJKb2huIiwibGFzdE5hbWUiOiJEb2UiLCJtZXRhZGF0YSI6eyJhZ2UiOjIwfSwicm9sZXMiOlt7fV0sInVzZXJuYW1lIjpudWxsLCJpZCI6MTIsImlhdCI6MTY4ODM5MTM5NSwiZXhwIjoxNjk4NzU5Mzk1fQ.jJ8LVhmJFx6BaieNb2_3Ta3svAXz6xki8PPc5C2vZSY
 
 ###? Get profile
 GET {{ authUrl }}/profile
@@ -134,3 +151,11 @@ X-Api-Key: {{ serviceAccountToken }}
 ###? Get roles with filter
 GET {{ url }}/users/7/roles?filter.id=$eq:2
 X-Api-Key: {{ serviceAccountToken }}
+
+###? Get all roles
+GET {{ url }}/roles
+X-Api-Key: {{ serviceAccountToken }}
+
+###? Get all roles with user (no access)
+GET {{ url }}/roles
+Authorization: Bearer {{ userToken }}

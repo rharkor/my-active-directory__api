@@ -1,5 +1,5 @@
 import ServiceAccount from '@/modules/service-account/entities/service-account.entity';
-import Role from '@/modules/users/entities/role.entity';
+import Role from '@/modules/roles/entities/role.entity';
 
 export type PayloadType = {
   id: number;

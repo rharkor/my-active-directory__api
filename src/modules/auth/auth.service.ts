@@ -6,7 +6,7 @@ import {
 import { UsersService } from '../users/users.service';
 import { compare as bcryptCompare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from '../users/dtos/loginUser.dto';
+import { LoginUserDto } from './login/loginUser.dto';
 import { CreateUserDto } from '../users/dtos/createUser.dto';
 import User from '../users/entities/user.entity';
 import { CreateFirstUserDto } from '../users/dtos/createFirstUser.dto';
@@ -19,6 +19,8 @@ import { checkPasswordSecurity } from '@/utils/auth';
 import { defaultRoles, findHighestRole } from '@/utils/roles';
 import { ServiceAccountService } from '../service-account/service-account.service';
 import ServiceAccount from '../service-account/entities/service-account.entity';
+import { RolesService } from '../roles/roles.service';
+import { Roles } from '@/meta/roles.meta';
 
 /*
  * The auth service is responsible for validating users only for the active directory app not for external apps
@@ -27,6 +29,7 @@ import ServiceAccount from '../service-account/entities/service-account.entity';
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private rolesService: RolesService,
     private serviceAccountService: ServiceAccountService,
     private jwtService: JwtService,
   ) {}
@@ -74,7 +77,7 @@ export class AuthService {
   }
 
   //? Register without auth is allowed only if there are no users in the database
-  async registerFirstTime(user: CreateFirstUserDto) {
+  async registerInit(user: CreateFirstUserDto) {
     if (!(await this.usersService.noUsers()))
       throw new ForbiddenException('Users already exist');
     const passwordSecurity = checkPasswordSecurity(user.password);
@@ -88,19 +91,20 @@ export class AuthService {
       password: user.password,
     });
     //* Add super admin role
-    await this.usersService.addRole(newUser, 'super-admin');
+    await this.rolesService.addRole(newUser, 'super-admin');
 
     return {
       access_token: this._signToken(newUser),
     };
   }
 
+  @Roles('admin', 'super-admin', 'service-account')
   async register(
     user: CreateUserDto,
     req: RequestWithUser | RequestWithServiceAccount,
   ) {
     const foundUser = await this.usersService.findUser(user, true);
-    if (foundUser) throw new ForbiddenException('User already exists');
+    if (foundUser) throw new BadRequestException('User already exists');
 
     let highestRole: string;
     if ('user' in req) {

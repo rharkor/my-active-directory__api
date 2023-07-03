@@ -12,21 +12,21 @@ import { ServiceAccountService } from './service-account.service';
 import { CreateServiceAccountDto } from './dtos/service-account-create.dto';
 import { UpdateServiceAccountDto } from './dtos/service-account-update.dto';
 
-@Controller()
+@Controller('service-account')
 export class ServiceAccountController {
   constructor(private readonly serviceAccountService: ServiceAccountService) {}
 
-  @Get('service-account')
+  @Get()
   findAll() {
     return this.serviceAccountService.findAll();
   }
 
-  @Post('service-account')
+  @Post()
   create(@Body() createServiceAccountDto: CreateServiceAccountDto) {
     return this.serviceAccountService.create(createServiceAccountDto);
   }
 
-  @Patch('service-account/:id')
+  @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateServiceAccountDto: UpdateServiceAccountDto,
@@ -34,7 +34,7 @@ export class ServiceAccountController {
     return this.serviceAccountService.update(id, updateServiceAccountDto);
   }
 
-  @Delete('service-account/:id')
+  @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.serviceAccountService.remove(id);
   }

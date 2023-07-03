@@ -7,10 +7,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { JwtStrategy } from './jwt.strategy';
 import { ServiceAccountModule } from '../service-account/service-account.module';
+import { AuthController } from './auth.controller';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
     UsersModule,
+    RolesModule,
     PassportModule,
     ServiceAccountModule,
     JwtModule.register({
@@ -20,5 +23,6 @@ import { ServiceAccountModule } from '../service-account/service-account.module'
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
+  controllers: [AuthController],
 })
 export class AuthModule {}

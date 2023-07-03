@@ -5,7 +5,7 @@ import {
   IsEmail,
   MinLength,
 } from 'class-validator';
-import Role from '../entities/role.entity';
+import Role from '../../roles/entities/role.entity';
 import { DeepPartial } from 'typeorm';
 
 export class UpdateUserDto {

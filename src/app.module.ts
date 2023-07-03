@@ -11,13 +11,16 @@ import { UsersModule } from './modules/users/users.module';
 import { ServiceAccountModule } from './modules/service-account/service-account.module';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiAuthGuard } from './modules/auth/api-auth.guard';
+import { RolesProvider } from './guards/roles.guard';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [
-    AuthModule,
     ...configurations,
+    AuthModule,
     CronModule,
     UsersModule,
+    RolesModule,
     ServiceAccountModule,
   ],
   controllers: [AppController],
@@ -35,6 +38,7 @@ import { ApiAuthGuard } from './modules/auth/api-auth.guard';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    RolesProvider,
   ],
 })
 export class AppModule {

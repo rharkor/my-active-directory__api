@@ -6,7 +6,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import Role from './role.entity';
+import Role from '../../roles/entities/role.entity';
 
 @Entity()
 @Check(`"email" IS NOT NULL OR "username" IS NOT NULL`)

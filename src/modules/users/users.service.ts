@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { DeleteResult, FindOptionsWhere, In, Repository } from 'typeorm';
 import User from './entities/user.entity';
 import { CreateUserDto } from './dtos/createUser.dto';
-import Role from './entities/role.entity';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import { hash } from 'bcrypt';
+import Role from '../roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -69,30 +69,23 @@ export class UsersService {
     return null;
   }
 
-  async findRoles(id: number, query: PaginateQuery): Promise<Paginated<Role>> {
-    //? Select all roles that have the user with the given id
-    const qb = this.roleRepository
-      .createQueryBuilder('role')
-      .leftJoin('role.users', 'user')
-      .where('user.id = :id', { id });
-
-    return paginate<Role>(query, qb, {
-      sortableColumns: ['name'],
-      filterableColumns: {
-        name: true,
-        displayName: true,
-        description: true,
-        id: true,
-        deletable: true,
-      },
-    });
-  }
-
   async noUsers(): Promise<boolean> {
     return (await this.userRepository.createQueryBuilder().getCount()) === 0;
   }
 
   async create(user: CreateUserDto): Promise<User> {
+    //* Check if all roles exist
+    if (user.roles) {
+      const roles = await this.roleRepository.findBy({
+        name: In(user.roles),
+      });
+      if (roles.length !== user.roles.length)
+        throw new BadRequestException('Invalid roles');
+
+      //? Set roles
+      user.roles = roles;
+    }
+
     const userObject = this.userRepository.create(user);
     return this.userRepository.save(userObject);
   }
@@ -134,22 +127,10 @@ export class UsersService {
     return this.userRepository.save({ id: userObject.id, ...user });
   }
 
-  async addRole(user: User, role: string): Promise<User> {
-    const roleObject = await this.roleRepository.findOne({
-      where: {
-        name: role,
-      },
-    });
-    if (!roleObject) throw new BadRequestException('Role not found');
-    if (!user.roles) user.roles = [roleObject];
-    else user.roles.push(roleObject);
-    return this.userRepository.save(user);
-  }
-
   async delete(
     id: number,
     req: RequestWithUser | RequestWithServiceAccount,
-  ): Promise<void> {
+  ): Promise<DeleteResult> {
     let highestRole: string;
     if ('user' in req) highestRole = findHighestRole(req.user.roles);
     else highestRole = 'service-account';
@@ -176,6 +157,6 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot delete other admins');
 
-    await this.userRepository.delete(id);
+    return this.userRepository.delete(id);
   }
 }

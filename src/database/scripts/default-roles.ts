@@ -1,4 +1,4 @@
-import Role from '../../modules/users/entities/role.entity';
+import Role from '../../modules/roles/entities/role.entity';
 import databaseConfiguration from '../database.configuration';
 import { Logger } from '@nestjs/common';
 import { defaultRoles } from '../../utils/roles';
