@@ -1,33 +1,139 @@
 # Daigis Api
-@url = http://localhost:3001/
+@url = http://localhost:3001
 
 // Change the auth token with the one you get from the login request
-@authToken = 
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsInVzZXJuYW1lIjoiYWRtaW4iLCJmaXJzdE5hbWUiOm51bGwsImxhc3ROYW1lIjpudWxsLCJtZXRhZGF0YSI6bnVsbCwiaWQiOjcsInJvbGVzIjpbeyJpZCI6MiwibmFtZSI6InN1cGVyLWFkbWluIiwiZGlzcGxheU5hbWUiOiJTdXBlciBBZG1pbiIsImRlc2NyaXB0aW9uIjoiU3VwZXIgYWRtaW4gb2YgdGhlIGFwcGxpY2F0aW9uLCBjYW4gZG8gYW55dGhpbmciLCJkZWxldGFibGUiOmZhbHNlfV0sImlhdCI6MTY4ODEyMzQ2MSwiZXhwIjoxNjk4NDkxNDYxfQ.YIbz1hlsMVLQFwIpuBO99RVCjNY8GerOnWsCz9dYpwQ
+@authTokenAdmin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJyb2xlcyI6W3t9XSwidXNlcm5hbWUiOm51bGwsImZpcnN0TmFtZSI6bnVsbCwibGFzdE5hbWUiOm51bGwsIm1ldGFkYXRhIjpudWxsLCJpZCI6OCwiaWF0IjoxNjg4MTI2OTYwLCJleHAiOjE2OTg0OTQ5NjB9.iWDye7Y9aSq7XtESf6kKA7ZoNMX6VfAw0Om5_wdoCEM
 
 ## Status
 ### Test the status of the api
 GET {{ url }}
 
+##* BASICS
 ## AUTH
-@authUrl = {{ url }}auth/
+@authUrl = {{ url }}/auth
+
+### Register first user
+POST {{ authUrl }}/register-fist-time
+Content-Type: application/json
+
+{
+  "email": "admin@admin.com",
+  "username": "admin",
+  "password": "Azerty1234!"
+}
+
 ### Get profile
-GET {{ authUrl }}profile
+GET {{ authUrl }}/profile
 Authorization: Bearer {{ authToken }}
 
 ### Login
-POST {{ authUrl }}login
+POST {{ authUrl }}/login
 Content-Type: application/json
 
 {
   "email": "admin@admin.com",
-  "password": "admin"
+  "password": "Azerty1234!"
 }
 
-### Register
-POST {{ authUrl }}register
+### Update
+PATCH {{ authUrl }}/update
+Authorization: Bearer {{ authToken }}
 Content-Type: application/json
 
 {
-  "email": "admin@admin.com",
-  "password": "admin"
+  "id": 7,
+  "firstName": "John",
+  "lastName": "Doe",
+  "metadata": {
+    "age": 20
+  }
 }
+
+
+### Create a new user with role admin
+POST {{ url }}/auth/register
+Authorization: Bearer {{ authToken }}
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "Azerty1234!",
+  "roles": ["admin"]
+}
+
+### Create a service-account
+POST {{ url }}/service-account
+Authorization: Bearer {{ authTokenAdmin }}
+Content-Type: application/json
+
+{
+  "name": "service-account1"
+}
+
+### Get all service-accounts
+GET {{ url }}/service-account
+Authorization: Bearer {{ authTokenAdmin }}
+
+
+##* MAD
+
+@serviceAccountToken = 2572bf1d-48f6-4e6f-85fb-9f5596e4186d
+
+### Create a user with role test
+POST {{ url }}/auth/register
+X-Api-Key: {{ serviceAccountToken }}
+Content-Type: application/json
+
+{
+  "email": "user@user.com",
+  "password": "Azerty1234!",
+  "roles": ["test"]
+}
+
+### Get all users
+GET {{ url }}/users
+X-Api-Key: {{ serviceAccountToken }}
+
+### Get one user
+GET {{ url }}/users/7
+X-Api-Key: {{ serviceAccountToken }}
+
+### Delete one user
+DELETE {{ url }}/users/8
+X-Api-Key: {{ serviceAccountToken }}
+
+### Update one user
+PATCH {{ authUrl }}/update
+X-Api-Key: {{ serviceAccountToken }}
+Content-Type: application/json
+
+{
+  "id": 9,
+  "firstName": "Joh",
+  "lastName": "Doe",
+  "metadata": {
+    "age": 20
+  }
+}
+
+### The user can login
+POST {{ authUrl }}/login
+Content-Type: application/json
+
+{
+  "email": "user@user.com",
+  "password": "Azerty1234!"
+}
+
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiZW1haWwiOiJ1c2VyQHVzZXIuY29tIiwidXNlcm5hbWUiOm51bGwsImZpcnN0TmFtZSI6IkpvaCIsImxhc3ROYW1lIjoiRG9lIiwibWV0YWRhdGEiOnsiYWdlIjoyMH0sInJvbGVzIjpbXSwiaWF0IjoxNjg4MTM0NTI4LCJleHAiOjE2OTg1MDI1Mjh9.ayCqWawbeuINg4ge0eX4CUgR4w9-SE0mNC8yvnB5IOs
+
+### Get profile
+GET {{ authUrl }}/profile
+Authorization: Bearer {{ userToken }}
+
+
+
+
+##* External services
+

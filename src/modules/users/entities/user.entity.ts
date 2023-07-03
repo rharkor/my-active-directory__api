@@ -46,13 +46,13 @@ class User {
     nullable: true,
     type: 'jsonb',
   })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @ManyToMany(() => Role, undefined, {
     eager: true,
   })
   @JoinTable()
-  roles: Role[];
+  roles?: Role[];
 }
 
 export default User;

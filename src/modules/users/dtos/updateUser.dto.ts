@@ -4,12 +4,15 @@ import {
   IsObject,
   IsEmail,
   MinLength,
-  IsArray,
+  IsNumber,
 } from 'class-validator';
 import Role from '../entities/role.entity';
 import { DeepPartial } from 'typeorm';
 
-export class CreateUserDto {
+export class UpdateUserDto {
+  @IsNumber()
+  id: number;
+
   @IsOptional()
   @IsString()
   @IsEmail()
@@ -38,6 +41,6 @@ export class CreateUserDto {
   metadata?: Record<string, unknown>;
 
   @IsOptional()
-  @IsArray()
+  @IsObject()
   roles?: DeepPartial<Role[]>;
 }

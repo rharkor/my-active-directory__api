@@ -13,7 +13,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const authService = app.get(AuthService);
   const port = configService.getOrThrow('app_port');
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
 
   // Add Swagger documentation
   const options = new DocumentBuilder()
@@ -28,8 +32,18 @@ async function bootstrap() {
     swaggerSpec: document,
     uriPath: '/api/stats',
     authentication: true,
-    onAuthenticate: (req, username, password) => {
-      return authService.validateUser(username, password);
+    onAuthenticate: async (req, username, password) => {
+      try {
+        await authService.validateUser(
+          {
+            username,
+          },
+          password,
+        );
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
   });
   app.use(statsMiddleware);

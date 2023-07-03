@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { jwtConstants } from './constants';
 import { UsersService } from '../users/users.service';
+import { PayloadType } from '@/types/auth';
 config();
 
 @Injectable()
@@ -16,8 +17,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    const user = await this.usersService.findOne(payload.email);
+  async validate(payload: PayloadType) {
+    const user = await this.usersService.findUser(payload);
     return user;
   }
 }

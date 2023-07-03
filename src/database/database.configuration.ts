@@ -7,7 +7,7 @@ config();
 const conf = databaseConfiguration();
 
 export default new DataSource({
-  type: conf['db_kind'] as any,
+  type: conf['db_kind'] as 'postgres',
   host: conf['db_host'],
   port: conf['db_port'],
   username: conf['db_user'],
