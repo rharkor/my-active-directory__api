@@ -2,7 +2,6 @@ FROM node as builder
 
 ENV NODE_ENV build
 
-USER node
 WORKDIR /home/api
 
 COPY package.json ./
@@ -10,6 +9,7 @@ COPY package-lock.json ./
 
 RUN npm ci
 
+USER node
 COPY --chown=node:node . .
 RUN npm run build && npm prune --production
 
