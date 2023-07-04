@@ -20,8 +20,6 @@ ENV NODE_ENV production
 USER node
 WORKDIR /home/api
 
-COPY --from=builder --chown=node:node /home/api/package*.json ./
-COPY --from=builder --chown=node:node /home/api/node_modules/ ./node_modules/
-COPY --from=builder --chown=node:node /home/api/dist/ ./dist/
+COPY --from=builder --chown=node:node /home/api .
 
 CMD npm run migrate:up && npm run sql:default-roles && npm run start:prod
