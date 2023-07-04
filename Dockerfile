@@ -9,6 +9,8 @@ COPY package-lock.json ./
 
 RUN npm ci
 
+COPY . .
+
 RUN npm run build && npm prune --production
 
 FROM node as production
