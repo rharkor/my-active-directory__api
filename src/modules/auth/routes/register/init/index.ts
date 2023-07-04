@@ -1,6 +1,6 @@
-import { AuthService } from '../../auth.service';
+import { AuthService } from '../../../auth.service';
 import { ApiErrorResponse, ApiRouteDocumentation } from '@/types';
-import { CreateFirstUserDto } from '@/modules/users/dtos/createFirstUser.dto';
+import { CreateFirstUserDto } from '@/modules/users/dtos/create-first-user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 class Response201 {

@@ -70,11 +70,28 @@ Authorization: Bearer {{ authTokenAdmin }}
 Content-Type: application/json
 
 {
-  "name": "service-account1"
+  "name": "service-account2"
 }
 
 ###? Get all service-accounts
 GET {{ url }}/service-account
+Authorization: Bearer {{ authTokenAdmin }}
+
+###? Find one
+GET {{ url }}/service-account/3
+Authorization: Bearer {{ authTokenAdmin }}
+
+###? Update a service-account
+PATCH {{ url }}/service-account/3
+Authorization: Bearer {{ authTokenAdmin }}
+Content-Type: application/json
+
+{
+  "name": "service-accountm"
+}
+
+###? Remove a service-account
+DELETE {{ url }}/service-account/6
 Authorization: Bearer {{ authTokenAdmin }}
 
 ###? Delete one user
@@ -84,7 +101,18 @@ Authorization: Bearer {{ authTokenAdmin }}
 
 ##* MAD
 
-@serviceAccountToken = 2572bf1d-48f6-4e6f-85fb-9f5596e4186d
+@serviceAccountToken = c8aad232-0a3d-4b83-9d3d-fc2a055189b8
+
+###? Create a role
+POST {{ url }}/roles
+X-Api-Key: {{ serviceAccountToken }}
+Content-Type: application/json
+
+{
+  "name": "test2",
+  "description": "test",
+  "displayName": "test"
+}
 
 ###? Create a user with role test
 POST {{ url }}/auth/register
@@ -107,20 +135,19 @@ GET {{ url }}/users
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Get one user
-GET {{ url }}/users/7
+GET {{ url }}/users/18
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Delete one user
-DELETE {{ url }}/users/11
+DELETE {{ url }}/users/18
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Update one user
-PATCH {{ authUrl }}/update
+PATCH {{ url }}/users/18
 X-Api-Key: {{ serviceAccountToken }}
 Content-Type: application/json
 
 {
-  "id": 9,
   "firstName": "Joh",
   "lastName": "Doe",
   "metadata": {
@@ -133,29 +160,47 @@ POST {{ authUrl }}/login
 Content-Type: application/json
 
 {
-  "email": "user@user.com",
+  "email": "user2@user.com",
   "password": "Azerty1234!"
 }
 
-@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAdXNlci5jb20iLCJmaXJzdE5hbWUiOiJKb2huIiwibGFzdE5hbWUiOiJEb2UiLCJtZXRhZGF0YSI6eyJhZ2UiOjIwfSwicm9sZXMiOlt7fV0sInVzZXJuYW1lIjpudWxsLCJpZCI6MTIsImlhdCI6MTY4ODM5MTM5NSwiZXhwIjoxNjk4NzU5Mzk1fQ.jJ8LVhmJFx6BaieNb2_3Ta3svAXz6xki8PPc5C2vZSY
 
 ###? Get profile
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIyQHVzZXIuY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwibWV0YWRhdGEiOnsiYWdlIjoyMH0sInJvbGVzIjpbeyJpZCI6NSwibmFtZSI6InRlc3QiLCJkaXNwbGF5TmFtZSI6InRlc3QiLCJkZXNjcmlwdGlvbiI6InRlc3QiLCJkZWxldGFibGUiOnRydWV9XSwidXNlcm5hbWUiOm51bGwsImlkIjoxOCwiaWF0IjoxNjg4NDE0MjYzLCJleHAiOjE2OTg3ODIyNjN9.BGadL-4A1AOW9HWdMqpdeTiu-7r-N6olusftvc5iSgU
+
 GET {{ authUrl }}/profile
 Authorization: Bearer {{ userToken }}
 
 
 ###? Get roles of the user
-GET {{ url }}/users/7/roles
+GET {{ url }}/users/18/roles
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Get roles with filter
-GET {{ url }}/users/7/roles?filter.id=$eq:2
+GET {{ url }}/users/18/roles?filter.id=$eq:5
 X-Api-Key: {{ serviceAccountToken }}
 
 ###? Get all roles
 GET {{ url }}/roles
 X-Api-Key: {{ serviceAccountToken }}
 
+###? Get one role
+GET {{ url }}/roles/2
+X-Api-Key: {{ serviceAccountToken }}
+
+###? Get all service accounts (no access)
+GET {{ url }}/service-account
+X-Api-Key: {{ serviceAccountToken }}
+
 ###? Get all roles with user (no access)
 GET {{ url }}/roles
 Authorization: Bearer {{ userToken }}
+
+###? Register a new user (no access)
+POST {{ authUrl }}/register
+Authorization: Bearer {{ userToken }}
+Content-Type: application/json
+
+{
+  "email": "test@test.com"
+}

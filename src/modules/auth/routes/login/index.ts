@@ -1,5 +1,5 @@
-import { LoginUserDto } from '@/modules/auth/login/loginUser.dto';
-import { AuthService } from '../auth.service';
+import { LoginUserDto } from '../login/loginUser.dto';
+import { AuthService } from '../../auth.service';
 import { ApiRouteDocumentation } from '@/types';
 import { ApiProperty } from '@nestjs/swagger';
 

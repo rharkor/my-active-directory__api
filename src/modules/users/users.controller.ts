@@ -11,57 +11,89 @@ import {
 import { UsersService } from './users.service';
 import { ApiAvailable } from '@/meta/api.meta';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
-import { UpdateUserDto } from './dtos/updateUser.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 import Role from '../roles/entities/role.entity';
 import { RolesService } from '../roles/roles.service';
+import { ApiTags } from '@nestjs/swagger';
+import { Route } from '@/meta/route.meta';
+import { usersFindAll } from './routes';
+import { usersFindRoles } from './routes/(:id)/roles';
+import { usersDelete, usersFindOne, usersUpdate } from './routes/(:id)';
 
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly rolesService: RolesService,
   ) {}
 
-  @Get()
-  @ApiAvailable()
+  @Route({
+    isApiAvailable: true,
+    method: 'get',
+    swagger: new usersFindAll.Documentation(),
+  })
   findAll(@Paginate() query: PaginateQuery) {
-    return this.usersService.findAll(query);
+    return usersFindAll.handler({ usersService: this.usersService, query });
   }
 
-  @Get(':id/roles')
-  @ApiAvailable()
+  @Route({
+    isApiAvailable: true,
+    method: 'get',
+    path: ':id/roles',
+    swagger: new usersFindRoles.Documentation(),
+  })
   findRoles(
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
   ): Promise<Paginated<Role>> {
-    return this.rolesService.findRoles(id, query);
-  }
-
-  @Get(':id')
-  @ApiAvailable()
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne({
+    return usersFindRoles.handler({
       id,
+      query,
+      rolesService: this.rolesService,
     });
   }
 
-  @ApiAvailable()
-  @Patch(':id')
-  async update(
+  @Route({
+    isApiAvailable: true,
+    method: 'get',
+    path: ':id',
+    swagger: new usersFindOne.Documentation(),
+  })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return usersFindOne.handler({ id, usersService: this.usersService });
+  }
+
+  @Route({
+    isApiAvailable: true,
+    method: 'patch',
+    path: ':id',
+    swagger: new usersUpdate.Documentation(),
+  })
+  update(
     @Request() req: RequestWithUser | RequestWithServiceAccount,
     @Body() user: UpdateUserDto,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.usersService.update(id, user, req);
+    return usersUpdate.handler({
+      id,
+      user,
+      usersService: this.usersService,
+      req,
+    });
   }
 
-  @Delete(':id')
-  @ApiAvailable()
+  @Route({
+    isApiAvailable: true,
+    method: 'delete',
+    path: ':id',
+    swagger: new usersDelete.Documentation(),
+  })
   delete(
     @Request() req: RequestWithUser | RequestWithServiceAccount,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.usersService.delete(id, req);
+    return usersDelete.handler({ id, usersService: this.usersService, req });
   }
 }

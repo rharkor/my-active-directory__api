@@ -24,8 +24,6 @@ export class RolesGuard implements CanActivate {
       .switchToHttp()
       .getRequest();
 
-    console.log('here');
-
     if ('api' in request) {
       return roles.includes('service-account');
     }

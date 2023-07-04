@@ -5,10 +5,13 @@ import databaseConfiguration from './database.configuration';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseType } from 'typeorm';
+import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
+import { Redis } from 'ioredis';
+import redisConfiguration from './redis.configuration';
 
 export default [
   ConfigModule.forRoot({
-    load: [appConfiguration, databaseConfiguration],
+    load: [appConfiguration, databaseConfiguration, redisConfiguration],
   }),
   TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
@@ -26,9 +29,22 @@ export default [
       autoLoadEntities: true,
     }),
   }),
-  ThrottlerModule.forRoot({
-    ttl: 60,
-    limit: 30,
+  ThrottlerModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService) => ({
+      ttl: 60,
+      limit: 30,
+
+      storage: new ThrottlerStorageRedisService(
+        new Redis({
+          host: configService.getOrThrow<string>('redis_host'),
+          port: configService.getOrThrow<number>('redis_port'),
+          password: configService.get<string | undefined>('redis_pass'),
+          username: configService.get<string | undefined>('redis_user'),
+        }),
+      ),
+    }),
   }),
   ScheduleModule.forRoot(),
 ];

@@ -21,6 +21,7 @@ class Role {
 
   @Column({
     default: true,
+    select: false,
   })
   deletable: boolean;
 

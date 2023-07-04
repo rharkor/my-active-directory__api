@@ -6,10 +6,10 @@ import {
 import { UsersService } from '../users/users.service';
 import { compare as bcryptCompare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from './login/loginUser.dto';
-import { CreateUserDto } from '../users/dtos/createUser.dto';
+import { LoginUserDto } from './routes/login/loginUser.dto';
+import { CreateUserDto } from '../users/dtos/create-user.dto';
 import User from '../users/entities/user.entity';
-import { CreateFirstUserDto } from '../users/dtos/createFirstUser.dto';
+import { CreateFirstUserDto } from '../users/dtos/create-first-user.dto';
 import {
   PayloadType,
   RequestWithServiceAccount,
@@ -20,7 +20,6 @@ import { defaultRoles, findHighestRole } from '@/utils/roles';
 import { ServiceAccountService } from '../service-account/service-account.service';
 import ServiceAccount from '../service-account/entities/service-account.entity';
 import { RolesService } from '../roles/roles.service';
-import { Roles } from '@/meta/roles.meta';
 
 /*
  * The auth service is responsible for validating users only for the active directory app not for external apps
@@ -98,7 +97,6 @@ export class AuthService {
     };
   }
 
-  @Roles('admin', 'super-admin', 'service-account')
   async register(
     user: CreateUserDto,
     req: RequestWithUser | RequestWithServiceAccount,

@@ -10,7 +10,10 @@ class ServiceAccount {
   })
   name: string;
 
-  @Column()
+  @Column({
+    select: false,
+    unique: true,
+  })
   token: string;
 }
 

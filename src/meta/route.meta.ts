@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiAvailable } from './api.meta';
@@ -96,6 +97,10 @@ export const Route = ({
 
       if (swagger.bearerAuth) {
         ApiBearerAuth()(target, key, descriptor);
+      }
+
+      if (isApiAvailable) {
+        ApiSecurity('x-api-key')(target, key, descriptor);
       }
     }
 

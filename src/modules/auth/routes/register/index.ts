@@ -1,6 +1,6 @@
-import { CreateUserDto } from '@/modules/users/dtos/createUser.dto';
+import { CreateUserDto } from '@/modules/users/dtos/create-user.dto';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../../auth.service';
 import { ApiErrorResponse, ApiRouteDocumentation } from '@/types';
 import { ApiProperty } from '@nestjs/swagger';
 

@@ -2,15 +2,16 @@ import { Controller, Get, UseGuards, Body, Request } from '@nestjs/common';
 import { AuthService } from '../../modules/auth/auth.service';
 import { JwtAuthGuard } from '../../modules/auth/jwt-auth.guard';
 import { LocalAuthGuard } from '../../modules/auth/local-auth.guard';
-import { LoginUserDto } from './login/loginUser.dto';
-import { CreateUserDto } from '../../modules/users/dtos/createUser.dto';
-import { CreateFirstUserDto } from '../../modules/users/dtos/createFirstUser.dto';
+import { LoginUserDto } from './routes/login/loginUser.dto';
+import { CreateUserDto } from '../users/dtos/create-user.dto';
+import { CreateFirstUserDto } from '../users/dtos/create-first-user.dto';
 import { RequestWithServiceAccount, RequestWithUser } from '../../types/auth';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Route } from '@/meta/route.meta';
-import { authRegister } from './register';
-import { authRegisterInit } from './register/init';
-import { authLogin, Response as authLoginResponse } from './login';
+import { authRegister } from './routes/register';
+import { authRegisterInit } from './routes/register/init';
+import { authLogin, Response as authLoginResponse } from './routes/login';
+import { authProfile } from './routes/profile';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -44,6 +45,7 @@ export class AuthController {
     method: 'post',
     path: 'register',
     swagger: new authRegister.Documentation(),
+    roles: ['admin', 'super-admin', 'service-account'],
   })
   async register(
     @Request() req: RequestWithUser | RequestWithServiceAccount,
@@ -52,10 +54,12 @@ export class AuthController {
     return authRegister.handler({ req, user, authService: this.authService });
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @Get(['profile', 'me'])
+  @Route({
+    method: 'get',
+    path: ['profile', 'me'],
+    swagger: new authProfile.Documentation(),
+  })
   getProfile(@Request() req: RequestWithUser) {
-    return req.user;
+    return authProfile.handler({ req });
   }
 }
