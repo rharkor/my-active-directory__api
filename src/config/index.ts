@@ -41,7 +41,6 @@ export default [
           host: configService.getOrThrow<string>('redis_host'),
           port: configService.getOrThrow<number>('redis_port'),
           password: configService.get<string | undefined>('redis_pass'),
-          username: configService.get<string | undefined>('redis_user'),
         }),
       ),
     }),

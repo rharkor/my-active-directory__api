@@ -4,5 +4,4 @@ export default () => ({
     ? parseInt(process.env.REDIS_PORT, 10)
     : 6379,
   redis_pass: process.env.REDIS_PASS,
-  redis_user: process.env.REDIS_USER,
 });

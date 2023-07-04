@@ -2,9 +2,9 @@ version: '3'
 services:
   my-active-directory__api:
     build: .
-    image: registry.yuniq.agency/my-active-directory/my-active-directory-api-main:latest
+    image: registry.yuniq.agency/my-active-directory/my-active-directory-api-rec:latest
     ports:
-      - '10055:3001'
+      - '10053:3001'
     restart: unless-stopped
     logging:
       driver: 'json-file'
