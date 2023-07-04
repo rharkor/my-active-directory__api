@@ -34,7 +34,6 @@ services:
       options:
         max-size: '50m'
     environment:
-      REDIS_PASS: ${REDIS_PASS}
-    command: redis-server --requirepass ${REDIS_PASS}
+      REDIS_PASSWORD: ${REDIS_PASS}
     volumes:
       - ./redis:/data
