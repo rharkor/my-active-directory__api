@@ -28,6 +28,7 @@ jobs:
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
+    environment: rec
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
