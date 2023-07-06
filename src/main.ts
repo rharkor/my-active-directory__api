@@ -6,12 +6,14 @@ import { AllExceptionsFilter } from './middlewares/all-exceptions.middleware';
 import * as swStats from 'swagger-stats';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AuthService } from './modules/auth/auth.service';
+import { RolesService } from './modules/roles/roles.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
   const authService = app.get(AuthService);
+  const rolesService = app.get(RolesService);
   const port = configService.getOrThrow('app_port');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,12 +45,16 @@ async function bootstrap() {
     authentication: true,
     onAuthenticate: async (req, username, password) => {
       try {
-        await authService.validateUser(
+        const user = await authService.validateUser(
           {
             username,
           },
           password,
         );
+        if (!user) return false;
+        //? Retrieve user roles
+        const roles = await rolesService.userHaveRole(user.id, ['super-admin']);
+        if (roles.length <= 0) return false;
         return true;
       } catch (e) {
         return false;
