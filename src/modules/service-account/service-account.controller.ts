@@ -1,25 +1,16 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  Patch,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ServiceAccountService } from './service-account.service';
-import { CreateServiceAccountDto } from './dtos/service-account-create.dto';
-import { UpdateServiceAccountDto } from './dtos/service-account-update.dto';
+import { CreateServiceAccountDto } from './dtos/create.dto';
+import { UpdateServiceAccountDto } from './dtos/update.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { serviceAccountCreate, serviceAccountFindAll } from './routes';
-import { Route } from '@/meta/route.meta';
-import {
-  serviceAccountFindOne,
-  serviceAccountRemove,
-  serviceAccountUpdate,
-} from './routes/(:id)';
+import { HttpMethod, Route } from '@/meta/route.meta';
+import { FindAllResponseDto } from './dtos/find-all-response.dto';
+import { CreateResponseDto } from './dtos/create-response.dto';
+import { ApiErrorResponse } from '@/types';
+import { FindOneResponseDto } from './dtos/find-one-response.dto';
+import { UpdateResponseDto } from './dtos/update-response.dto';
+import { RemoveResponseDto } from './dtos/remove-response.dto';
 
 @Controller('service-account')
 @ApiTags('service-account')
@@ -27,69 +18,114 @@ export class ServiceAccountController {
   constructor(private readonly serviceAccountService: ServiceAccountService) {}
 
   @Route({
-    method: 'get',
+    method: HttpMethod.Get,
     roles: ['super-admin', 'admin'],
-    swagger: new serviceAccountFindAll.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindAllResponseDto,
+      },
+      operation: {
+        summary: 'Get all',
+        description: 'Retrieve all service accounts with pagination',
+      },
+    },
   })
-  findAll(@Paginate() query: PaginateQuery) {
-    return serviceAccountFindAll.handler({
-      query,
-      serviceAccountService: this.serviceAccountService,
-    });
+  findAll(@Paginate() query: PaginateQuery): Promise<FindAllResponseDto> {
+    return this.serviceAccountService.findAll(query);
   }
 
   @Route({
-    method: 'get',
+    method: HttpMethod.Get,
     roles: ['super-admin', 'admin'],
     path: ':id',
-    swagger: new serviceAccountFindOne.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindOneResponseDto,
+      },
+      operation: {
+        summary: 'Find one',
+        description: 'Retrieve one service account',
+      },
+    },
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return serviceAccountFindOne.handler({
-      id,
-      serviceAccountService: this.serviceAccountService,
-    });
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<FindOneResponseDto | null> {
+    return this.serviceAccountService.findOne(id);
   }
 
   @Route({
-    method: 'post',
+    method: HttpMethod.Post,
     roles: ['super-admin', 'admin'],
-    swagger: new serviceAccountCreate.Documentation(),
+    swagger: {
+      responses: [
+        {
+          status: 201,
+          description: 'Success',
+          type: CreateResponseDto,
+        },
+        {
+          status: 400,
+          description: 'Bad request',
+          type: ApiErrorResponse,
+        },
+      ],
+      operation: {
+        summary: 'Create',
+        description: 'Create a service account',
+      },
+    },
   })
-  create(@Body() createServiceAccountDto: CreateServiceAccountDto) {
-    return serviceAccountCreate.handler({
-      createServiceAccountDto,
-      serviceAccountService: this.serviceAccountService,
-    });
+  create(
+    @Body() createServiceAccountDto: CreateServiceAccountDto,
+  ): Promise<CreateResponseDto> {
+    return this.serviceAccountService.create(createServiceAccountDto);
   }
 
   @Route({
-    method: 'patch',
+    method: HttpMethod.Patch,
     roles: ['super-admin', 'admin'],
     path: ':id',
-    swagger: new serviceAccountUpdate.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: UpdateResponseDto,
+      },
+      operation: {
+        summary: 'Update',
+        description: 'Update one service account',
+      },
+    },
   })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateServiceAccountDto: UpdateServiceAccountDto,
-  ) {
-    return serviceAccountUpdate.handler({
-      id,
-      updateServiceAccountDto,
-      serviceAccountService: this.serviceAccountService,
-    });
+  ): Promise<UpdateResponseDto> {
+    return this.serviceAccountService.update(id, updateServiceAccountDto);
   }
 
   @Route({
-    method: 'delete',
+    method: HttpMethod.Delete,
     roles: ['super-admin', 'admin'],
     path: ':id',
-    swagger: new serviceAccountRemove.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: RemoveResponseDto,
+      },
+      operation: {
+        summary: 'Remove',
+        description: 'Remove a service account',
+      },
+    },
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return serviceAccountRemove.handler({
-      id,
-      serviceAccountService: this.serviceAccountService,
-    });
+  remove(@Param('id', ParseIntPipe) id: number): Promise<RemoveResponseDto> {
+    return this.serviceAccountService.remove(id);
   }
 }

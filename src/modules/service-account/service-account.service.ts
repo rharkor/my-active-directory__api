@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import ServiceAccount from './entities/service-account.entity';
-import { CreateServiceAccountDto } from './dtos/service-account-create.dto';
-import { UpdateServiceAccountDto } from './dtos/service-account-update.dto';
+import { CreateServiceAccountDto } from './dtos/create.dto';
+import { UpdateServiceAccountDto } from './dtos/update.dto';
 import { v4 as uuid } from 'uuid';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 

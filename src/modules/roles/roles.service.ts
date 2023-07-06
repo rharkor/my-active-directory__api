@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import Role from './entities/role.entity';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import User from '../users/entities/user.entity';
-import { CreateRoleDto } from './dtos/create-role.dto';
+import { CreateRoleDto } from './dtos/create.dto';
 
 @Injectable()
 export class RolesService {
@@ -15,7 +15,7 @@ export class RolesService {
     private userRepository: Repository<User>,
   ) {}
 
-  async createRole(createRoleDto: CreateRoleDto) {
+  async create(createRoleDto: CreateRoleDto) {
     try {
       return await this.roleRepository.save({
         ...createRoleDto,
@@ -29,7 +29,7 @@ export class RolesService {
     }
   }
 
-  async findAllRoles(query: PaginateQuery): Promise<Paginated<Role>> {
+  async findAll(query: PaginateQuery): Promise<Paginated<Role>> {
     return paginate<Role>(query, this.roleRepository, {
       sortableColumns: ['name'],
       filterableColumns: {
@@ -54,7 +54,7 @@ export class RolesService {
     return qb.getMany();
   }
 
-  async findRoles(id: number, query: PaginateQuery): Promise<Paginated<Role>> {
+  async findByUser(id: number, query: PaginateQuery): Promise<Paginated<Role>> {
     //? Select all roles that have the user with the given id
     const qb = this.roleRepository
       .createQueryBuilder('role')
@@ -81,7 +81,7 @@ export class RolesService {
     });
   }
 
-  async addRole(user: User, role: string): Promise<User> {
+  async addRoleToUser(user: User, role: string): Promise<User> {
     const roleObject = await this.roleRepository.findOne({
       where: {
         name: role,
@@ -93,7 +93,7 @@ export class RolesService {
     return this.userRepository.save(user);
   }
 
-  async deleteRole(id: number) {
+  async delete(id: number) {
     //* Ensure that the role is deletable
     const role = await this.roleRepository.findOne({
       where: {

@@ -6,10 +6,10 @@ import {
 import { UsersService } from '../users/users.service';
 import { compare as bcryptCompare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from './routes/login/loginUser.dto';
-import { CreateUserDto } from '../users/dtos/create-user.dto';
+import { LoginUserDto } from './dtos/login-user.dto';
+import { CreateDto } from '../users/dtos/create.dto';
 import User from '../users/entities/user.entity';
-import { CreateFirstUserDto } from '../users/dtos/create-first-user.dto';
+import { CreateFirstDto } from '../users/dtos/create-first.dto';
 import {
   PayloadType,
   RequestWithServiceAccount,
@@ -76,7 +76,7 @@ export class AuthService {
   }
 
   //? Register without auth is allowed only if there are no users in the database
-  async registerInit(user: CreateFirstUserDto) {
+  async registerInit(user: CreateFirstDto) {
     if (!(await this.usersService.noUsers()))
       throw new ForbiddenException('Users already exist');
     const passwordSecurity = checkPasswordSecurity(user.password);
@@ -90,7 +90,7 @@ export class AuthService {
       password: user.password,
     });
     //* Add super admin role
-    await this.rolesService.addRole(newUser, 'super-admin');
+    await this.rolesService.addRoleToUser(newUser, 'super-admin');
 
     return {
       access_token: this._signToken(newUser),
@@ -98,7 +98,7 @@ export class AuthService {
   }
 
   async register(
-    user: CreateUserDto,
+    user: CreateDto,
     req: RequestWithUser | RequestWithServiceAccount,
   ) {
     const foundUser = await this.usersService.findUser(user, true);

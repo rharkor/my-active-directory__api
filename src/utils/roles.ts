@@ -1,5 +1,5 @@
+import { CreateRoleDto } from '@/modules/roles/dtos/create.dto';
 import Role from '@/modules/roles/entities/role.entity';
-import { CreateRoleDto } from 'src/modules/roles/dtos/create-role.dto';
 import User from 'src/modules/users/entities/user.entity';
 
 export const defaultRoles: CreateRoleDto[] = [

@@ -1,10 +1,13 @@
 import { Body, Controller, Param, ParseIntPipe } from '@nestjs/common';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
-import { Route } from '@/meta/route.meta';
+import { HttpMethod, Route } from '@/meta/route.meta';
 import { RolesService } from './roles.service';
-import { CreateRoleDto } from './dtos/create-role.dto';
-import { rolesFindAll, rolesFindOne, rolesCreate } from './routes';
+import { CreateRoleDto } from './dtos/create.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { FindAllResponseDto } from './dtos/find-all-response.dto';
+import { FindOneResponseDto } from './dtos/find-one-response.dto';
+import { CreateResponseDto } from './dtos/create-response.dto';
+import { ApiErrorResponse } from '@/types';
 
 @Controller('roles')
 @ApiTags('roles')
@@ -12,36 +15,79 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Route({
-    method: 'get',
+    method: HttpMethod.Get,
     isApiAvailable: true,
     roles: ['super-admin', 'admin', 'service-account'],
-    swagger: new rolesFindAll.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindAllResponseDto,
+      },
+      operation: {
+        summary: 'Get all',
+        description: 'Retrieve all roles with pagination',
+      },
+    },
   })
-  findAll(@Paginate() query: PaginateQuery) {
-    return rolesFindAll.handler({ query, rolesService: this.rolesService });
+  findAll(@Paginate() query: PaginateQuery): Promise<FindAllResponseDto> {
+    return this.rolesService.findAll(query);
   }
 
   @Route({
-    method: 'get',
+    method: HttpMethod.Get,
     path: ':id',
     isApiAvailable: true,
     roles: ['super-admin', 'admin', 'service-account'],
-    swagger: new rolesFindOne.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindOneResponseDto,
+      },
+      operation: {
+        summary: 'Get one',
+        description: 'Retrieve one role',
+      },
+    },
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return rolesFindOne.handler({ id, rolesService: this.rolesService });
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<FindOneResponseDto> {
+    return this.rolesService.findOne(id);
   }
 
   @Route({
-    method: 'post',
+    method: HttpMethod.Post,
     isApiAvailable: true,
     roles: ['super-admin', 'admin', 'service-account'],
-    swagger: new rolesCreate.Documentation(),
+    swagger: {
+      responses: [
+        {
+          status: 201,
+          description: 'Role created',
+          type: CreateResponseDto,
+        },
+        {
+          status: 400,
+          description: 'Bad request',
+          type: ApiErrorResponse,
+        },
+      ],
+      operation: {
+        summary: 'Create',
+        description: 'Create a role',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateRoleDto',
+              },
+            },
+          },
+        },
+      },
+    },
   })
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return rolesCreate.handler({
-      createRoleDto,
-      rolesService: this.rolesService,
-    });
+  create(@Body() createRoleDto: CreateRoleDto): Promise<CreateResponseDto> {
+    return this.rolesService.create(createRoleDto);
   }
 }

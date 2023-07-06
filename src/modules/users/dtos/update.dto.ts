@@ -8,7 +8,7 @@ import {
 import Role from '../../roles/entities/role.entity';
 import { DeepPartial } from 'typeorm';
 
-export class UpdateUserDto {
+export class UpdateDto {
   @IsOptional()
   @IsString()
   @IsEmail()

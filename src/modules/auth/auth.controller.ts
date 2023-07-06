@@ -1,17 +1,16 @@
-import { Controller, Get, UseGuards, Body, Request } from '@nestjs/common';
+import { Controller, Body, Request } from '@nestjs/common';
 import { AuthService } from '../../modules/auth/auth.service';
-import { JwtAuthGuard } from '../../modules/auth/jwt-auth.guard';
 import { LocalAuthGuard } from '../../modules/auth/local-auth.guard';
-import { LoginUserDto } from './routes/login/loginUser.dto';
-import { CreateUserDto } from '../users/dtos/create-user.dto';
-import { CreateFirstUserDto } from '../users/dtos/create-first-user.dto';
+import { LoginUserDto } from './dtos/login-user.dto';
+import { CreateDto as CreateUserDto } from '../users/dtos/create.dto';
+import { CreateFirstDto as CreateFirstUserDto } from '../users/dtos/create-first.dto';
 import { RequestWithServiceAccount, RequestWithUser } from '../../types/auth';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Route } from '@/meta/route.meta';
-import { authRegister } from './routes/register';
-import { authRegisterInit } from './routes/register/init';
-import { authLogin, Response as authLoginResponse } from './routes/login';
-import { authProfile } from './routes/profile';
+import { ApiTags } from '@nestjs/swagger';
+import { HttpMethod, Route } from '@/meta/route.meta';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { RegisterResponseDto } from './dtos/register-response.dto';
+import { ApiErrorResponse } from '@/types';
+import { ProfileResponseDto } from './dtos/profile-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -20,46 +19,124 @@ export class AuthController {
 
   @Route({
     isPublic: true,
+    method: HttpMethod.Post,
+    path: 'login',
     useGuards: [LocalAuthGuard],
     throttle: [10, 60],
-    swagger: new authLogin.Documentation(),
-    method: 'post',
-    path: 'login',
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Login successful',
+        type: LoginResponseDto,
+      },
+      operation: {
+        summary: 'Login',
+        description: 'Login with username or email and password',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/LoginUserDto',
+              },
+            },
+          },
+        },
+      },
+    },
   })
-  async login(@Body() user: LoginUserDto): Promise<authLoginResponse> {
-    return authLogin.handler({ authService: this.authService, user });
+  login(@Body() user: LoginUserDto): Promise<LoginResponseDto> {
+    return this.authService.login(user);
   }
 
   @Route({
     isPublic: true,
-    method: 'post',
+    method: HttpMethod.Post,
     path: 'register/init',
-    swagger: new authRegisterInit.Documentation(),
+    swagger: {
+      responses: [
+        {
+          status: 201,
+          description: 'The user has been successfully registered.',
+          type: RegisterResponseDto,
+        },
+        {
+          status: 403,
+          description:
+            'Forbidden because the first user has already been created.',
+          type: ApiErrorResponse,
+        },
+      ],
+      operation: {
+        summary: 'Register',
+        description: 'Register a new user',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateFirstUserDto',
+              },
+            },
+          },
+        },
+      },
+    },
   })
-  async registerInit(@Body() user: CreateFirstUserDto) {
-    return authRegisterInit.handler({ user, authService: this.authService });
+  registerInit(@Body() user: CreateFirstUserDto): Promise<RegisterResponseDto> {
+    return this.authService.registerInit(user);
   }
 
   @Route({
     isApiAvailable: true,
-    method: 'post',
+    method: HttpMethod.Post,
     path: 'register',
-    swagger: new authRegister.Documentation(),
+    swagger: {
+      responses: [
+        {
+          status: 201,
+          description: 'The user has been successfully registered.',
+          type: RegisterResponseDto,
+        },
+        {
+          status: 400,
+          description: 'Bad request.',
+          type: ApiErrorResponse,
+        },
+      ],
+      operation: {
+        summary: 'Register',
+        description: 'Register a new user',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateUserDto',
+              },
+            },
+          },
+        },
+      },
+    },
     roles: ['admin', 'super-admin', 'service-account'],
   })
-  async register(
+  register(
     @Request() req: RequestWithUser | RequestWithServiceAccount,
     @Body() user: CreateUserDto,
-  ) {
-    return authRegister.handler({ req, user, authService: this.authService });
+  ): Promise<RegisterResponseDto> {
+    return this.authService.register(user, req);
   }
 
   @Route({
-    method: 'get',
+    method: HttpMethod.Get,
     path: ['profile', 'me'],
-    swagger: new authProfile.Documentation(),
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Get profile successful',
+        type: ProfileResponseDto,
+      },
+    },
   })
-  getProfile(@Request() req: RequestWithUser) {
-    return authProfile.handler({ req });
+  getProfile(@Request() req: RequestWithUser): ProfileResponseDto {
+    return req.user;
   }
 }

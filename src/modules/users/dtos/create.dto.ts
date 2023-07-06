@@ -10,7 +10,7 @@ import Role from '../../roles/entities/role.entity';
 import { DeepPartial } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateUserDto {
+export class CreateDto {
   @IsOptional()
   @IsString()
   @IsEmail()

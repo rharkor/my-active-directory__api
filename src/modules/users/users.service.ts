@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindOptionsWhere, In, Repository } from 'typeorm';
 import User from './entities/user.entity';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { CreateDto } from './dtos/create.dto';
+import { UpdateDto } from './dtos/update.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
@@ -20,13 +20,17 @@ export class UsersService {
   ) {}
 
   async findOne(
-    where: FindOptionsWhere<User> | FindOptionsWhere<User>[] | undefined,
+    where:
+      | FindOptionsWhere<User>
+      | FindOptionsWhere<User>[]
+      | number
+      | undefined,
     withPassword = false,
   ): Promise<User | null> {
     let value: User | null;
     if (withPassword)
       value = await this.userRepository.findOne({
-        where,
+        where: typeof where === 'number' ? { id: where } : where,
         select: [
           'id',
           'email',
@@ -38,7 +42,10 @@ export class UsersService {
           'roles',
         ],
       });
-    else value = await this.userRepository.findOne({ where });
+    else
+      value = await this.userRepository.findOne({
+        where: typeof where === 'number' ? { id: where } : where,
+      });
 
     //? Lmit the number of roles to 100
     if (value && value.roles && (value.roles.length ?? 0) > 100)
@@ -73,7 +80,7 @@ export class UsersService {
     return (await this.userRepository.createQueryBuilder().getCount()) === 0;
   }
 
-  async create(user: CreateUserDto): Promise<User> {
+  async create(user: CreateDto): Promise<User> {
     //* Check if all roles exist
     if (user.roles) {
       const roles = await this.roleRepository.findBy({
@@ -92,7 +99,7 @@ export class UsersService {
 
   async update(
     id: number,
-    user: UpdateUserDto,
+    user: UpdateDto,
     req: RequestWithUser | RequestWithServiceAccount,
   ): Promise<User> {
     let highestRole: string;
@@ -127,7 +134,7 @@ export class UsersService {
     return this.userRepository.save({ id: userObject.id, ...user });
   }
 
-  async delete(
+  async remove(
     id: number,
     req: RequestWithUser | RequestWithServiceAccount,
   ): Promise<DeleteResult> {

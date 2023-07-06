@@ -22,15 +22,16 @@ import {
 import { ApiAvailable } from './api.meta';
 import { Roles } from './roles.meta';
 
-type AvailableMetods =
-  | 'get'
-  | 'post'
-  | 'put'
-  | 'delete'
-  | 'patch'
-  | 'options'
-  | 'head'
-  | 'all';
+export enum HttpMethod {
+  Get = 'GET',
+  Post = 'POST',
+  Put = 'PUT',
+  Delete = 'DELETE',
+  Patch = 'PATCH',
+  Options = 'OPTIONS',
+  Head = 'HEAD',
+  All = 'ALL',
+}
 
 export type RouteType = {
   isPublic?: boolean;
@@ -38,12 +39,17 @@ export type RouteType = {
   useGuards?: Parameters<typeof UseGuards>;
   throttle?: Parameters<typeof Throttle>;
   swagger?: {
-    tags: () => Parameters<typeof ApiTags>;
-    operation: () => Parameters<typeof ApiOperation>[0];
-    responses: () => Parameters<typeof ApiResponse>[0][];
+    tags?: (() => Parameters<typeof ApiTags>) | Parameters<typeof ApiTags>[0][];
+    operation?:
+      | (() => Parameters<typeof ApiOperation>[0])
+      | Parameters<typeof ApiOperation>[0];
+    responses?:
+      | (() => Parameters<typeof ApiResponse>[0][])
+      | Parameters<typeof ApiResponse>[0][]
+      | Parameters<typeof ApiResponse>[0];
     bearerAuth?: boolean;
   };
-  method: AvailableMetods;
+  method: HttpMethod;
   path?: string | string[];
   roles?: Parameters<typeof Roles>;
 };
@@ -84,18 +90,37 @@ export const Route = ({
 
     if (swagger) {
       if (swagger.tags) {
-        ApiTags(...swagger.tags())(target, key, descriptor);
+        //? If swagger.tags is a function, call it, otherwise use it as is
+        ApiTags(
+          ...(typeof swagger.tags === 'function'
+            ? swagger.tags()
+            : swagger.tags),
+        )(target, key, descriptor);
       }
       if (swagger.operation) {
-        ApiOperation(swagger.operation())(target, key, descriptor);
+        //? If swagger.operation is a function, call it, otherwise use it as is
+        ApiOperation(
+          typeof swagger.operation === 'function'
+            ? swagger.operation()
+            : swagger.operation,
+        )(target, key, descriptor);
       }
       if (swagger.responses) {
-        swagger.responses().forEach((response) => {
+        //? If swagger.responses is a function, call it, otherwise use it as is
+        (typeof swagger.responses === 'function'
+          ? swagger.responses()
+          : Array.isArray(swagger.responses)
+          ? swagger.responses
+          : [swagger.responses]
+        ).forEach((response) => {
           ApiResponse(response)(target, key, descriptor);
         });
       }
 
-      if (swagger.bearerAuth) {
+      if (
+        swagger.bearerAuth === true ||
+        (swagger.bearerAuth === undefined && !isPublic)
+      ) {
         ApiBearerAuth()(target, key, descriptor);
       }
 
@@ -104,21 +129,21 @@ export const Route = ({
       }
     }
 
-    if (method === 'all') {
+    if (method === HttpMethod.All) {
       All(path)(target, key, descriptor);
-    } else if (method === 'get') {
+    } else if (method === HttpMethod.Get) {
       Get(path)(target, key, descriptor);
-    } else if (method === 'post') {
+    } else if (method === HttpMethod.Post) {
       Post(path)(target, key, descriptor);
-    } else if (method === 'put') {
+    } else if (method === HttpMethod.Put) {
       Put(path)(target, key, descriptor);
-    } else if (method === 'delete') {
+    } else if (method === HttpMethod.Delete) {
       Delete(path)(target, key, descriptor);
-    } else if (method === 'patch') {
+    } else if (method === HttpMethod.Patch) {
       Patch(path)(target, key, descriptor);
-    } else if (method === 'options') {
+    } else if (method === HttpMethod.Options) {
       Options(path)(target, key, descriptor);
-    } else if (method === 'head') {
+    } else if (method === HttpMethod.Head) {
       Head(path)(target, key, descriptor);
     }
 
