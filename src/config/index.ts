@@ -34,7 +34,7 @@ export default [
     inject: [ConfigService],
     useFactory: (configService: ConfigService) => ({
       ttl: 60,
-      limit: 30,
+      limit: 60,
 
       storage: new ThrottlerStorageRedisService(
         new Redis({

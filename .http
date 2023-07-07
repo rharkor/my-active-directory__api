@@ -12,6 +12,9 @@ GET {{ url }}
 ##* BASICS
 @authUrl = {{ url }}/auth
 
+###? Initialized
+GET {{ url }}/auth/initialized
+
 ###? Register first user
 POST {{ authUrl }}/register/init
 Content-Type: application/json
