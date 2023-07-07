@@ -63,6 +63,9 @@ async function bootstrap() {
   });
   app.use(statsMiddleware);
 
+  //? Enable CORS
+  app.enableCors();
+
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   await app.listen(port);
