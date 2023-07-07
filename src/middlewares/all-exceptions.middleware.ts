@@ -23,7 +23,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    if (httpStatus === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (
+      httpStatus === HttpStatus.INTERNAL_SERVER_ERROR ||
+      process.env.NODE_ENV !== 'production'
+    ) {
       console.error(exception);
     }
 
