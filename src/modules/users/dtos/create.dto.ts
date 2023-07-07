@@ -5,6 +5,7 @@ import {
   IsEmail,
   MinLength,
   IsArray,
+  MaxLength,
 } from 'class-validator';
 import Role from '../../roles/entities/role.entity';
 import { DeepPartial } from 'typeorm';
@@ -25,24 +26,29 @@ export class CreateDto {
   @IsOptional()
   @IsString()
   @MinLength(5)
+  @MaxLength(50)
   @ApiProperty({
     description: 'Username',
     example: 'admin',
     required: false,
     type: String,
     minLength: 5,
+    maxLength: 50,
   })
   username?: string;
 
   @IsOptional()
   @IsString()
   @MinLength(8)
+  @MaxLength(50)
   @ApiProperty({
-    description: 'Password',
+    description:
+      'Password (regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)',
     example: 'admin123',
     required: false,
     type: String,
     minLength: 8,
+    maxLength: 50,
   })
   password?: string;
 

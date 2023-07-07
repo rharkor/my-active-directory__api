@@ -81,15 +81,19 @@ export class RolesService {
     });
   }
 
-  async addRoleToUser(user: User, role: string): Promise<User> {
-    const roleObject = await this.roleRepository.findOne({
+  async ensureRoleExists(name: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
       where: {
-        name: role,
+        name,
       },
     });
-    if (!roleObject) throw new BadRequestException('Role not found');
-    if (!user.roles) user.roles = [roleObject];
-    else user.roles.push(roleObject);
+    if (!role) throw new BadRequestException('Role not found');
+    return role;
+  }
+
+  async addRoleToUser(user: User, role: Role): Promise<User> {
+    if (!user.roles) user.roles = [role];
+    else user.roles.push(role);
     return this.userRepository.save(user);
   }
 

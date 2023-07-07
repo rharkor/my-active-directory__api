@@ -39,6 +39,12 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
+  async initialized() {
+    return {
+      initialized: !(await this.usersService.noUsers()),
+    };
+  }
+
   async validateUser(
     userInfo: {
       email?: string;
@@ -66,7 +72,7 @@ export class AuthService {
     const foundUser = await this.usersService.findUser(user, true);
     if (!foundUser) throw new ForbiddenException('Invalid credentials');
     if (!user.password || !foundUser.password)
-      throw new ForbiddenException('Cannot login withou password');
+      throw new ForbiddenException('Cannot login without password');
     if (!(await bcryptCompare(user.password, foundUser.password))) {
       throw new ForbiddenException('Invalid credentials');
     }
@@ -82,6 +88,13 @@ export class AuthService {
     const passwordSecurity = checkPasswordSecurity(user.password);
     if (passwordSecurity.valid !== true)
       throw new BadRequestException(passwordSecurity.error);
+
+    //? Verify that the roles are valid
+    const superAdminRole = await this.rolesService.ensureRoleExists(
+      'super-admin',
+    );
+
+    //* Hash the password
     const hashedPassword = await hash(user.password, 10);
     user.password = hashedPassword;
     const newUser = await this.usersService.create({
@@ -90,7 +103,7 @@ export class AuthService {
       password: user.password,
     });
     //* Add super admin role
-    await this.rolesService.addRoleToUser(newUser, 'super-admin');
+    await this.rolesService.addRoleToUser(newUser, superAdminRole);
 
     return {
       access_token: this._signToken(newUser),
