@@ -18,7 +18,7 @@ import { RolesModule } from '../roles/roles.module';
     ServiceAccountModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '120d' },
+      signOptions: { expiresIn: jwtConstants.expiresIn },
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
