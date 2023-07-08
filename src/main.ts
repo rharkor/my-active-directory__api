@@ -7,6 +7,7 @@ import * as swStats from 'swagger-stats';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AuthService } from './modules/auth/auth.service';
 import { RolesService } from './modules/roles/roles.service';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -65,6 +66,8 @@ async function bootstrap() {
 
   //? Enable CORS
   app.enableCors();
+  //? Parse Cookies
+  app.use(cookieParser());
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
