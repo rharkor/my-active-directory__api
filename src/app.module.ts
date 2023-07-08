@@ -13,6 +13,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiAuthGuard } from './modules/auth/api-auth.guard';
 import { RolesProvider } from './guards/roles.guard';
 import { RolesModule } from './modules/roles/roles.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RolesModule } from './modules/roles/roles.module';
     UsersModule,
     RolesModule,
     ServiceAccountModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [

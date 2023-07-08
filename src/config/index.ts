@@ -8,6 +8,7 @@ import { DatabaseType } from 'typeorm';
 import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
 import { Redis } from 'ioredis';
 import redisConfiguration from './redis.configuration';
+import { UploadConfig } from './upload.configuration';
 
 export default [
   ConfigModule.forRoot({
@@ -35,7 +36,6 @@ export default [
     useFactory: (configService: ConfigService) => ({
       ttl: 60,
       limit: 60,
-
       storage: new ThrottlerStorageRedisService(
         new Redis({
           host: configService.getOrThrow<string>('redis_host'),
@@ -46,4 +46,5 @@ export default [
     }),
   }),
   ScheduleModule.forRoot(),
+  UploadConfig,
 ];

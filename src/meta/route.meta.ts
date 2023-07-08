@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Public } from './public.meta';
 import { Throttle } from '@nestjs/throttler';
@@ -37,6 +38,7 @@ export type RouteType = {
   isPublic?: boolean;
   isApiAvailable?: boolean;
   useGuards?: Parameters<typeof UseGuards>;
+  useInterceptors?: Parameters<typeof UseInterceptors>;
   throttle?: Parameters<typeof Throttle>;
   swagger?: {
     tags?: (() => Parameters<typeof ApiTags>) | Parameters<typeof ApiTags>[0][];
@@ -63,6 +65,7 @@ export const Route = ({
   isPublic,
   isApiAvailable,
   useGuards,
+  useInterceptors,
   throttle,
   swagger,
   method,
@@ -81,6 +84,12 @@ export const Route = ({
     if (useGuards) {
       useGuards.forEach((guard) => {
         UseGuards(guard)(target, key, descriptor);
+      });
+    }
+
+    if (useInterceptors) {
+      useInterceptors.forEach((interceptor) => {
+        UseInterceptors(interceptor)(target, key, descriptor);
       });
     }
 
