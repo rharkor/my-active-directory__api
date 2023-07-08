@@ -4,9 +4,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import Role from '../../roles/entities/role.entity';
+import Token from '../../auth/entities/token.entity';
 
 @Entity()
 @Check(`"email" IS NOT NULL OR "username" IS NOT NULL`)
@@ -53,6 +55,9 @@ class User {
   })
   @JoinTable()
   roles?: Role[];
+
+  @OneToOne(() => Token, (token) => token.user)
+  refreshToken?: Token;
 }
 
 export default User;

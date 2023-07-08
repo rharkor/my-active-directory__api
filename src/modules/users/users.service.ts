@@ -1,6 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, FindOptionsWhere, In, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  FindOneOptions,
+  FindOptionsWhere,
+  In,
+  Repository,
+} from 'typeorm';
 import User from './entities/user.entity';
 import { CreateDto } from './dtos/create.dto';
 import { UpdateDto } from './dtos/update.dto';
@@ -26,6 +32,7 @@ export class UsersService {
       | number
       | undefined,
     withPassword = false,
+    options?: FindOneOptions<User>,
   ): Promise<User | null> {
     let value: User | null;
     if (withPassword)
@@ -41,10 +48,12 @@ export class UsersService {
           'metadata',
           'roles',
         ],
+        ...options,
       });
     else
       value = await this.userRepository.findOne({
         where: typeof where === 'number' ? { id: where } : where,
+        ...options,
       });
 
     //? Lmit the number of roles to 100
@@ -70,9 +79,10 @@ export class UsersService {
   async findUser(
     { email, username }: { email?: string; username?: string },
     withPassword = false,
+    options?: FindOneOptions<User>,
   ) {
-    if (email) return this.findOne({ email }, withPassword);
-    if (username) return this.findOne({ username }, withPassword);
+    if (email) return this.findOne({ email }, withPassword, options);
+    if (username) return this.findOne({ username }, withPassword, options);
     return null;
   }
 
@@ -103,11 +113,12 @@ export class UsersService {
     req: RequestWithUser | RequestWithServiceAccount,
   ): Promise<User> {
     let highestRole: string;
-    if ('user' in req) highestRole = findHighestRole(req.user.roles);
+    if ('user' in req && req.user && 'roles' in req.user)
+      highestRole = findHighestRole(req.user.roles);
     else highestRole = 'service-account';
 
     if (highestRole === 'user') {
-      if (!('user' in req))
+      if (!('user' in req) || !req.user || !('id' in req.user))
         throw new BadRequestException('You cannot update other users');
       if (req.user.id !== id)
         throw new BadRequestException('You cannot update other users');
@@ -139,11 +150,12 @@ export class UsersService {
     req: RequestWithUser | RequestWithServiceAccount,
   ): Promise<DeleteResult> {
     let highestRole: string;
-    if ('user' in req) highestRole = findHighestRole(req.user.roles);
+    if ('user' in req && req.user && 'roles' in req.user)
+      highestRole = findHighestRole(req.user.roles);
     else highestRole = 'service-account';
 
     if (highestRole === 'user') {
-      if (!('user' in req))
+      if (!('user' in req) || !req.user || !('id' in req.user))
         throw new BadRequestException('You cannot delete other users');
       if (req.user.id !== id)
         throw new BadRequestException('You cannot delete other users');

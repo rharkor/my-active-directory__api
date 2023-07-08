@@ -9,6 +9,8 @@ import { JwtStrategy } from './jwt.strategy';
 import { ServiceAccountModule } from '../service-account/service-account.module';
 import { AuthController } from './auth.controller';
 import { RolesModule } from '../roles/roles.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import Token from './entities/token.entity';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { RolesModule } from '../roles/roles.module';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: jwtConstants.expiresIn },
     }),
+    TypeOrmModule.forFeature([Token]),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],

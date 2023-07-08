@@ -11,6 +11,8 @@ import { RegisterResponseDto } from './dtos/register-response.dto';
 import { ApiErrorResponse } from '@/types';
 import { ProfileResponseDto } from './dtos/profile-response.dto';
 import { InitializedResponseDto } from './dtos/initialized-response.dto';
+import { RefreshResponseDto } from './dtos/refresh-response.dto';
+import { Request as ERequest } from 'express';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -158,5 +160,21 @@ export class AuthController {
   })
   getProfile(@Request() req: RequestWithUser): ProfileResponseDto {
     return req.user;
+  }
+
+  @Route({
+    method: HttpMethod.Get,
+    path: 'refresh',
+    isPublic: true,
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Refresh tokens successful',
+        type: RefreshResponseDto,
+      },
+    },
+  })
+  refresh(@Request() req: ERequest): Promise<RefreshResponseDto> {
+    return this.authService.refreshTokens(req);
   }
 }
