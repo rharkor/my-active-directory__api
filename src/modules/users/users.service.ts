@@ -152,10 +152,16 @@ export class UsersService {
       ...user,
     })) as User & { tokens?: { accessToken: string; refreshToken: string } };
 
+    const newUser = {
+      ...userObject,
+    };
+    if ('email' in user) newUser.email = user.email;
+    if ('username' in user) newUser.username = user.username;
+
     //? Refresh tokens if username, email with the new username or email
     if (user.username || user.email) {
-      const tokens = signToken(res, this.jwtService);
-      this.updateRefreshToken(res, tokens.refreshToken);
+      const tokens = signToken(newUser, this.jwtService);
+      this.updateRefreshToken(newUser, tokens.refreshToken);
       res.tokens = tokens;
     }
 
@@ -180,12 +186,12 @@ export class UsersService {
         throw new BadRequestException('You cannot update other users');
     }
 
-    const userObject = await this.userRepository.findOne({
-      where: {
+    const userObject = await this.findOne(
+      {
         id,
       },
-      select: ['id', 'password', 'roles'],
-    });
+      true,
+    );
     if (!userObject) throw new BadRequestException('User not found');
 
     // Admin cannot update other admins or super-admins
@@ -203,14 +209,20 @@ export class UsersService {
     if (!(await compare(oldPassword, userObject.password)))
       throw new BadRequestException('Invalid password');
 
+    const hashedPassword = await hash(password, 10);
     const res = (await this.userRepository.save({
       id: userObject.id,
-      password: await hash(password, 10),
+      password: hashedPassword,
     })) as User & { tokens: { accessToken: string; refreshToken: string } };
 
+    const newUser = {
+      ...userObject,
+      password: hashedPassword,
+    };
+
     //? Refresh tokens
-    const tokens = signToken(res, this.jwtService);
-    this.updateRefreshToken(res, tokens.refreshToken);
+    const tokens = signToken(newUser, this.jwtService);
+    this.updateRefreshToken(newUser, tokens.refreshToken);
     res.tokens = tokens;
 
     return res;
