@@ -116,7 +116,12 @@ export class UsersController {
     @Body() user: UpdatePasswordDto,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UpdatePasswordResponseDto> {
-    return this.usersService.updatePassword(id, user.password, req);
+    return this.usersService.updatePassword(
+      id,
+      user.oldPassword,
+      user.password,
+      req,
+    );
   }
 
   @Route({

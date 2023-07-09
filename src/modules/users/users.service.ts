@@ -13,8 +13,13 @@ import { UpdateDto } from './dtos/update.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import Role from '../roles/entities/role.entity';
+import { signToken } from '@/utils/auth';
+import { JwtService } from '@nestjs/jwt';
+import { UpdateResponseDto } from './dtos/update-response.dto';
+import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
+import Token from '../auth/entities/token.entity';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +28,9 @@ export class UsersService {
     private userRepository: Repository<User>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(Token)
+    private tokenRepository: Repository<Token>,
+    private jwtService: JwtService,
   ) {}
 
   async findOne(
@@ -111,7 +119,7 @@ export class UsersService {
     id: number,
     user: UpdateDto,
     req: RequestWithUser | RequestWithServiceAccount,
-  ): Promise<User> {
+  ): Promise<UpdateResponseDto> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
       highestRole = findHighestRole(req.user.roles);
@@ -139,14 +147,27 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot update other admins');
 
-    return this.userRepository.save({ id: userObject.id, ...user });
+    const res = (await this.userRepository.save({
+      id: userObject.id,
+      ...user,
+    })) as User & { tokens?: { accessToken: string; refreshToken: string } };
+
+    //? Refresh tokens if username, email with the new username or email
+    if (user.username || user.email) {
+      const tokens = signToken(res, this.jwtService);
+      this.updateRefreshToken(res, tokens.refreshToken);
+      res.tokens = tokens;
+    }
+
+    return res;
   }
 
   async updatePassword(
     id: number,
+    oldPassword: string,
     password: string,
     req: RequestWithUser | RequestWithServiceAccount,
-  ): Promise<User> {
+  ): Promise<UpdatePasswordResponseDto> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
       highestRole = findHighestRole(req.user.roles);
@@ -163,6 +184,7 @@ export class UsersService {
       where: {
         id,
       },
+      select: ['id', 'password', 'roles'],
     });
     if (!userObject) throw new BadRequestException('User not found');
 
@@ -174,11 +196,24 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot update other admins');
 
-    const hashedPassword = await hash(password, 10);
-    return this.userRepository.save({
+    if (!userObject.password) {
+      throw new BadRequestException('User does not have a password');
+    }
+
+    if (!(await compare(oldPassword, userObject.password)))
+      throw new BadRequestException('Invalid password');
+
+    const res = (await this.userRepository.save({
       id: userObject.id,
-      password: hashedPassword,
-    });
+      password: await hash(password, 10),
+    })) as User & { tokens: { accessToken: string; refreshToken: string } };
+
+    //? Refresh tokens
+    const tokens = signToken(res, this.jwtService);
+    this.updateRefreshToken(res, tokens.refreshToken);
+    res.tokens = tokens;
+
+    return res;
   }
 
   async remove(
@@ -213,5 +248,19 @@ export class UsersService {
       throw new BadRequestException('You cannot delete other admins');
 
     return this.userRepository.delete(id);
+  }
+
+  async updateRefreshToken(user: User, refreshToken: string) {
+    const tokenHash = await hash(refreshToken, 10);
+    await this.tokenRepository.update(
+      {
+        user: {
+          id: user.id,
+        },
+      },
+      {
+        refreshToken: tokenHash,
+      },
+    );
   }
 }

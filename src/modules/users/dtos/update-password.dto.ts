@@ -14,5 +14,18 @@ export class UpdatePasswordDto {
     minLength: 8,
     maxLength: 50,
   })
+  oldPassword: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(50)
+  @ApiProperty({
+    description: `Password (regex: ${passwordRegex})`,
+    example: 'admin123',
+    required: true,
+    type: String,
+    minLength: 8,
+    maxLength: 50,
+  })
   password: string;
 }

@@ -32,4 +32,12 @@ export class UpdateResponseDto {
     },
   })
   metadata?: unknown;
+
+  @ApiProperty({
+    description: 'The user tokens refreshed if (email/username) are updated',
+  })
+  tokens?: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
