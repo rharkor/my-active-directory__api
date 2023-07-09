@@ -82,15 +82,11 @@ export const Route = ({
     }
 
     if (useGuards) {
-      useGuards.forEach((guard) => {
-        UseGuards(guard)(target, key, descriptor);
-      });
+      UseGuards(...useGuards)(target, key, descriptor);
     }
 
     if (useInterceptors) {
-      useInterceptors.forEach((interceptor) => {
-        UseInterceptors(interceptor)(target, key, descriptor);
-      });
+      UseInterceptors(...useInterceptors)(target, key, descriptor);
     }
 
     if (throttle) {

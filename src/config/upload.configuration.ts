@@ -1,7 +1,7 @@
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 
-export const UploadConfig = MulterModule.register({
+export const uploadConfig = {
   dest: './uploads',
   limits: {
     fileSize: 1024 * 1024 * 10, // 10MB
@@ -20,4 +20,6 @@ export const UploadConfig = MulterModule.register({
       cb(null, filename);
     },
   }),
-});
+};
+
+export const UploadConfig = MulterModule.register(uploadConfig);
