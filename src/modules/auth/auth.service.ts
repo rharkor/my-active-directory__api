@@ -16,7 +16,11 @@ import {
   RequestWithServiceAccount,
   RequestWithUser,
 } from '@/types/auth';
-import { checkPasswordSecurity, signToken } from '@/utils/auth';
+import {
+  checkPasswordSecurity,
+  signToken,
+  updateRefreshToken,
+} from '@/utils/auth';
 import { defaultRoles, findHighestRole } from '@/utils/roles';
 import { ServiceAccountService } from '../service-account/service-account.service';
 import ServiceAccount from '../service-account/entities/service-account.entity';
@@ -27,7 +31,7 @@ import { Repository } from 'typeorm';
 import { jwtConstants } from './constants';
 import { Request } from 'express';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
-import uaParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 /*
  * The auth service is responsible for validating users only for the active directory app not for external apps
@@ -72,7 +76,7 @@ export class AuthService {
     return api;
   }
 
-  async login(user: LoginUserDto, userAgent: string) {
+  async login(user: LoginUserDto, userAgent: string, req: Request) {
     const foundUser = await this.usersService.findUser(user, true);
     if (!foundUser) throw new ForbiddenException('Invalid credentials');
     if (!user.password || !foundUser.password)
@@ -82,12 +86,19 @@ export class AuthService {
     }
 
     const tokens = signToken(foundUser, this.jwtService);
-    await this.updateRefreshToken(foundUser, tokens.refreshToken, userAgent);
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    await updateRefreshToken(
+      foundUser,
+      tokens.refreshToken,
+      userAgent,
+      this.tokenRepository,
+      ip?.toString() ?? '',
+    );
     return signToken(foundUser, this.jwtService);
   }
 
   //? Register without auth is allowed only if there are no users in the database
-  async registerInit(user: CreateFirstDto, userAgent: string) {
+  async registerInit(user: CreateFirstDto, userAgent: string, req: Request) {
     if (!(await this.usersService.noUsers()))
       throw new ForbiddenException('Users already exist');
     const passwordSecurity = checkPasswordSecurity(user.password);
@@ -111,7 +122,14 @@ export class AuthService {
     await this.rolesService.addRoleToUser(newUser, superAdminRole);
 
     const tokens = signToken(newUser, this.jwtService);
-    await this.updateRefreshToken(newUser, tokens.refreshToken, userAgent);
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    await updateRefreshToken(
+      newUser,
+      tokens.refreshToken,
+      userAgent,
+      this.tokenRepository,
+      ip?.toString() ?? '',
+    );
     return tokens;
   }
 
@@ -172,34 +190,15 @@ export class AuthService {
 
     const newUser = await this.usersService.create(user);
     const tokens = signToken(newUser, this.jwtService);
-    this.updateRefreshToken(newUser, tokens.refreshToken, userAgent);
-    return tokens;
-  }
-
-  async updateRefreshToken(
-    user: User,
-    refreshToken: string,
-    userAgent: string,
-  ) {
-    const tokenHash = await hash(refreshToken, 10);
-    const res = await this.tokenRepository.update(
-      {
-        user: {
-          id: user.id,
-        },
-        userAgent,
-      },
-      {
-        refreshToken: tokenHash,
-      },
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    updateRefreshToken(
+      newUser,
+      tokens.refreshToken,
+      userAgent,
+      this.tokenRepository,
+      ip?.toString() ?? '',
     );
-    if (res.affected === 0) {
-      await this.tokenRepository.save({
-        user,
-        refreshToken: tokenHash,
-        userAgent,
-      });
-    }
+    return tokens;
   }
 
   async refreshTokens(req: Request) {
@@ -272,7 +271,14 @@ export class AuthService {
     }
 
     const tokens = signToken(user, this.jwtService);
-    await this.updateRefreshToken(user, tokens.refreshToken, userAgent ?? '');
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    await updateRefreshToken(
+      user,
+      tokens.refreshToken,
+      userAgent ?? '',
+      this.tokenRepository,
+      ip?.toString() ?? '',
+    );
     return tokens;
   }
 
@@ -284,8 +290,12 @@ export class AuthService {
       },
     });
     const data: TokenUA[] = res.data.map((token) => {
-      const ua = uaParser(token.userAgent);
-      return ua;
+      const ua = new UAParser(token.userAgent);
+      return {
+        ...ua.getResult(),
+        //? Add others fields
+        ...token,
+      };
     });
 
     const resForce = res as unknown as Paginated<TokenUA>;

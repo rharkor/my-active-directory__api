@@ -55,7 +55,7 @@ export class AuthController {
   ): Promise<LoginResponseDto> {
     const userAgent: string | string[] | undefined =
       req.headers?.['user-agent'];
-    return this.authService.login(user, userAgent ?? '');
+    return this.authService.login(user, userAgent ?? '', req);
   }
 
   @Route({
@@ -117,7 +117,7 @@ export class AuthController {
   ): Promise<RegisterResponseDto> {
     const userAgent: string | string[] | undefined =
       req.headers?.['user-agent'];
-    return this.authService.registerInit(user, userAgent ?? '');
+    return this.authService.registerInit(user, userAgent ?? '', req);
   }
 
   @Route({

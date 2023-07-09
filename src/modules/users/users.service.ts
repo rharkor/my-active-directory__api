@@ -15,7 +15,7 @@ import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import { compare, hash } from 'bcrypt';
 import Role from '../roles/entities/role.entity';
-import { signToken } from '@/utils/auth';
+import { signToken, updateRefreshToken } from '@/utils/auth';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
@@ -132,6 +132,9 @@ export class UsersService {
         throw new BadRequestException('You cannot update other users');
     }
 
+    const userAgent: string | string[] | undefined =
+      req.headers?.['user-agent'];
+
     const userObject = await this.userRepository.findOne({
       where: {
         id,
@@ -161,7 +164,14 @@ export class UsersService {
     //? Refresh tokens if username, email with the new username or email
     if (user.username || user.email) {
       const tokens = signToken(newUser, this.jwtService);
-      this.updateRefreshToken(newUser, tokens.refreshToken);
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      updateRefreshToken(
+        newUser,
+        tokens.refreshToken,
+        userAgent ?? '',
+        this.tokenRepository,
+        ip?.toString() ?? '',
+      );
       res.tokens = tokens;
     }
 
@@ -185,6 +195,9 @@ export class UsersService {
       if (req.user.id !== id)
         throw new BadRequestException('You cannot update other users');
     }
+
+    const userAgent: string | string[] | undefined =
+      req.headers?.['user-agent'];
 
     const userObject = await this.findOne(
       {
@@ -222,7 +235,14 @@ export class UsersService {
 
     //? Refresh tokens
     const tokens = signToken(newUser, this.jwtService);
-    this.updateRefreshToken(newUser, tokens.refreshToken);
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    updateRefreshToken(
+      newUser,
+      tokens.refreshToken,
+      userAgent ?? '',
+      this.tokenRepository,
+      ip?.toString() ?? '',
+    );
     res.tokens = tokens;
 
     return res;
@@ -260,19 +280,5 @@ export class UsersService {
       throw new BadRequestException('You cannot delete other admins');
 
     return this.userRepository.delete(id);
-  }
-
-  async updateRefreshToken(user: User, refreshToken: string) {
-    const tokenHash = await hash(refreshToken, 10);
-    await this.tokenRepository.update(
-      {
-        user: {
-          id: user.id,
-        },
-      },
-      {
-        refreshToken: tokenHash,
-      },
-    );
   }
 }

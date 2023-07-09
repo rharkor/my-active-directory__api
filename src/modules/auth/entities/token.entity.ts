@@ -25,6 +25,20 @@ class Token {
   })
   userAgent: string;
 
+  @Column({
+    nullable: true,
+  })
+  lastUsed: Date;
+
+  @Column()
+  createdAt: Date;
+
+  @Column()
+  expiresAt: Date;
+
+  @Column()
+  createdByIp: string;
+
   @ManyToOne(() => User, (user) => user.refreshTokens, {
     onDelete: 'CASCADE',
   })
