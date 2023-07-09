@@ -173,6 +173,7 @@ export class AuthController {
         type: RefreshResponseDto,
       },
     },
+    throttle: [120, 60],
   })
   refresh(@Request() req: ERequest): Promise<RefreshResponseDto> {
     return this.authService.refreshTokens(req);

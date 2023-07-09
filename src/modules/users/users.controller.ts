@@ -90,6 +90,7 @@ export class UsersController {
     isApiAvailable: true,
     method: HttpMethod.Patch,
     path: ':id/password',
+    throttle: [10, 60],
     swagger: {
       responses: {
         status: 200,
@@ -128,6 +129,7 @@ export class UsersController {
     isApiAvailable: true,
     method: HttpMethod.Patch,
     path: ':id',
+    throttle: [10, 60],
     swagger: {
       responses: {
         status: 200,
