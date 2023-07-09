@@ -180,17 +180,24 @@ export class AuthService {
     userAgent: string,
   ) {
     const tokenHash = await hash(refreshToken, 10);
-    await this.tokenRepository.update(
+    const res = await this.tokenRepository.update(
       {
         user: {
           id: user.id,
         },
+        userAgent,
       },
       {
         refreshToken: tokenHash,
-        userAgent,
       },
     );
+    if (res.affected === 0) {
+      await this.tokenRepository.save({
+        user,
+        refreshToken: tokenHash,
+        userAgent,
+      });
+    }
   }
 
   async refreshTokens(req: Request) {

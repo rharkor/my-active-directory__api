@@ -66,6 +66,7 @@
     "rxjs": "^7.2.0",
     "swagger-stats": "^0.99.5",
     "typeorm": "^0.3.12",
+    "ua-parser-js": "^1.0.35",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
