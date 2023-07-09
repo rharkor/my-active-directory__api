@@ -1,4 +1,4 @@
-import { Controller, Body, Request } from '@nestjs/common';
+import { Controller, Body, Request, ParseIntPipe, Param } from '@nestjs/common';
 import { AuthService } from '../../modules/auth/auth.service';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { CreateDto as CreateUserDto } from '../users/dtos/create.dto';
@@ -13,6 +13,9 @@ import { ProfileResponseDto } from './dtos/profile-response.dto';
 import { InitializedResponseDto } from './dtos/initialized-response.dto';
 import { RefreshResponseDto } from './dtos/refresh-response.dto';
 import { Request as ERequest } from 'express';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { FindAllTokensResponseDto } from './dtos/find-all-tokens-response.dto';
+import { RemoveTokenResponseDto } from './dtos/remove-token-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -187,5 +190,50 @@ export class AuthController {
   })
   refresh(@Request() req: ERequest): Promise<RefreshResponseDto> {
     return this.authService.refreshTokens(req);
+  }
+
+  /*
+   * TOKENS CRUD
+   */
+  @Route({
+    method: HttpMethod.Get,
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindAllTokensResponseDto,
+      },
+      operation: {
+        summary: 'Get all tokens',
+        description: 'Retrieve all tokens of the current user',
+      },
+      tags: ['tokens'],
+    },
+  })
+  findAllTokens(
+    @Paginate() query: PaginateQuery,
+  ): Promise<FindAllTokensResponseDto> {
+    return this.authService.findAllTokens(query);
+  }
+
+  @Route({
+    method: HttpMethod.Delete,
+    path: ':id',
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: RemoveTokenResponseDto,
+      },
+      operation: {
+        summary: 'Remove a token',
+      },
+      tags: ['tokens'],
+    },
+  })
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<RemoveTokenResponseDto> {
+    return this.authService.removeToken(id);
   }
 }

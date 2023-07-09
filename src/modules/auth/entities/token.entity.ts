@@ -7,6 +7,7 @@ import {
   Unique,
 } from 'typeorm';
 import User from '../../users/entities/user.entity';
+import { IResult } from 'ua-parser-js';
 
 @Entity()
 @Unique('userAgent', ['userAgent', 'user'])
@@ -32,3 +33,5 @@ class Token {
 }
 
 export default Token;
+
+export type TokenUA = IResult;

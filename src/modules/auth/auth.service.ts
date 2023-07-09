@@ -22,10 +22,12 @@ import { ServiceAccountService } from '../service-account/service-account.servic
 import ServiceAccount from '../service-account/entities/service-account.entity';
 import { RolesService } from '../roles/roles.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import Token from './entities/token.entity';
+import Token, { TokenUA } from './entities/token.entity';
 import { Repository } from 'typeorm';
 import { jwtConstants } from './constants';
 import { Request } from 'express';
+import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
+import uaParser from 'ua-parser-js';
 
 /*
  * The auth service is responsible for validating users only for the active directory app not for external apps
@@ -272,5 +274,29 @@ export class AuthService {
     const tokens = signToken(user, this.jwtService);
     await this.updateRefreshToken(user, tokens.refreshToken, userAgent ?? '');
     return tokens;
+  }
+
+  async findAllTokens(query: PaginateQuery): Promise<Paginated<TokenUA>> {
+    const res = await paginate<Token>(query, this.tokenRepository, {
+      sortableColumns: ['id'],
+      filterableColumns: {
+        id: true,
+      },
+    });
+    const data: TokenUA[] = res.data.map((token) => {
+      const ua = uaParser(token.userAgent);
+      return ua;
+    });
+
+    const resForce = res as unknown as Paginated<TokenUA>;
+
+    return {
+      ...resForce,
+      data,
+    };
+  }
+
+  removeToken(id: number) {
+    return this.tokenRepository.delete(id);
   }
 }
