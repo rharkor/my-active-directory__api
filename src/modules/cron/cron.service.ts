@@ -18,15 +18,15 @@ export class CronService {
   async cleanUnused() {
     this.logger.log('Cleaning unused files');
     //? Clean all files that are not used by any users
-    const allUsersProfilePictures = await this.usersRepository
+    const allUsersProfilePictures = (await this.usersRepository
       .createQueryBuilder('user')
-      .select("metadata->>'profilePicture'")
-      .where("metadata->>'profilePicture' IS NOT NULL")
-      .getRawMany();
-    const allFiles = fs.readdirSync('uploads');
+      .select("metadata->>'avatar' as avatar")
+      .where("metadata->>'avatar' IS NOT NULL")
+      .getRawMany()) as { avatar: string }[];
+    const allFiles = fs.readdirSync('uploads').map((file) => `uploads/${file}`);
     const usedFiles = new Set<string>();
     allUsersProfilePictures.forEach((filename) => {
-      if (filename) usedFiles.add(filename);
+      if (filename) usedFiles.add(filename.avatar);
     });
     const unusedFiles = allFiles.filter((file) => !usedFiles.has(file));
     unusedFiles.forEach((file) => {
@@ -35,8 +35,8 @@ export class CronService {
     this.logger.log(`Cleaned ${unusedFiles.length} files`);
   }
 
-  @Cron('0 * * * *') // Every hour
-  //@Cron('*/10 * * * * *') // Every 10 seconds
+  @Cron('0 0 * * *') // Every day at midnight
+  // @Cron('*/10 * * * * *') // Every 10 seconds
   async handleCron() {
     this.cleanUnused();
   }

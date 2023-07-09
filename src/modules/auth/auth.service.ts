@@ -16,7 +16,7 @@ import {
   RequestWithServiceAccount,
   RequestWithUser,
 } from '@/types/auth';
-import { checkPasswordSecurity } from '@/utils/auth';
+import { checkPasswordSecurity, signToken } from '@/utils/auth';
 import { defaultRoles, findHighestRole } from '@/utils/roles';
 import { ServiceAccountService } from '../service-account/service-account.service';
 import ServiceAccount from '../service-account/entities/service-account.entity';
@@ -40,17 +40,6 @@ export class AuthService {
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
   ) {}
-
-  _signToken(user: User) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...payload }: PayloadType & { password?: string } = user;
-    return {
-      accessToken: this.jwtService.sign(payload),
-      refreshToken: this.jwtService.sign(payload, {
-        expiresIn: jwtConstants.refreshIn,
-      }),
-    };
-  }
 
   async initialized() {
     return {
@@ -90,9 +79,9 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    const tokens = this._signToken(foundUser);
+    const tokens = signToken(foundUser, this.jwtService);
     await this.updateRefreshToken(foundUser, tokens.refreshToken);
-    return this._signToken(foundUser);
+    return signToken(foundUser, this.jwtService);
   }
 
   //? Register without auth is allowed only if there are no users in the database
@@ -119,7 +108,7 @@ export class AuthService {
     //* Add super admin role
     await this.rolesService.addRoleToUser(newUser, superAdminRole);
 
-    const tokens = this._signToken(newUser);
+    const tokens = signToken(newUser, this.jwtService);
     await this.updateRefreshToken(newUser, tokens.refreshToken);
     return tokens;
   }
@@ -178,7 +167,7 @@ export class AuthService {
     }
 
     const newUser = await this.usersService.create(user);
-    const tokens = this._signToken(newUser);
+    const tokens = signToken(newUser, this.jwtService);
     this.updateRefreshToken(newUser, tokens.refreshToken);
     return tokens;
   }
@@ -251,7 +240,7 @@ export class AuthService {
       Logger.debug('Refresh token does not match');
       throw new ForbiddenException('Invalid credentials');
     }
-    const tokens = this._signToken(user);
+    const tokens = signToken(user, this.jwtService);
     await this.updateRefreshToken(user, tokens.refreshToken);
     return tokens;
   }

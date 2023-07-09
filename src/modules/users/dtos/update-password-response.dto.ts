@@ -32,4 +32,12 @@ export class UpdatePasswordResponseDto {
     },
   })
   metadata?: unknown;
+
+  @ApiProperty({
+    description: 'The user tokens refreshed',
+  })
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
