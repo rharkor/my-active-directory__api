@@ -10,6 +10,7 @@ import {
 import Role from '../../roles/entities/role.entity';
 import { DeepPartial } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { passwordRegex } from '@/utils/auth';
 
 export class CreateDto {
   @IsOptional()
@@ -42,8 +43,7 @@ export class CreateDto {
   @MinLength(8)
   @MaxLength(50)
   @ApiProperty({
-    description:
-      'Password (regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)',
+    description: `Password (regex: ${passwordRegex})`,
     example: 'admin123',
     required: false,
     type: String,
@@ -59,7 +59,11 @@ export class CreateDto {
     example: 'John',
     required: false,
     type: String,
+    minLength: 2,
+    maxLength: 50,
   })
+  @MinLength(2)
+  @MaxLength(50)
   firstName?: string;
 
   @IsOptional()
@@ -69,7 +73,11 @@ export class CreateDto {
     example: 'Doe',
     required: false,
     type: String,
+    minLength: 2,
+    maxLength: 50,
   })
+  @MinLength(2)
+  @MaxLength(50)
   lastName?: string;
 
   @IsOptional()

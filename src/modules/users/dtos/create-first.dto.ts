@@ -1,3 +1,4 @@
+import { passwordRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
@@ -36,8 +37,7 @@ export class CreateFirstDto {
   @MinLength(8)
   @MaxLength(50)
   @ApiProperty({
-    description:
-      'Password (regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)',
+    description: `Password (regex: ${passwordRegex})`,
     example: 'admin123',
     required: true,
     type: String,

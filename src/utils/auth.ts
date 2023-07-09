@@ -1,7 +1,8 @@
+export const passwordRegex = new RegExp(
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
+);
+
 export const checkPasswordSecurity = (password: string) => {
-  const passwordRegex = new RegExp(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
-  );
   const valid = passwordRegex.test(password);
   if (valid)
     return {

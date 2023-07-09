@@ -139,10 +139,46 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot update other admins');
 
-    //? Encrypt password if it is provided
-    if (user.password) user.password = await hash(user.password, 10);
-
     return this.userRepository.save({ id: userObject.id, ...user });
+  }
+
+  async updatePassword(
+    id: number,
+    password: string,
+    req: RequestWithUser | RequestWithServiceAccount,
+  ): Promise<User> {
+    let highestRole: string;
+    if ('user' in req && req.user && 'roles' in req.user)
+      highestRole = findHighestRole(req.user.roles);
+    else highestRole = 'service-account';
+
+    if (highestRole === 'user') {
+      if (!('user' in req) || !req.user || !('id' in req.user))
+        throw new BadRequestException('You cannot update other users');
+      if (req.user.id !== id)
+        throw new BadRequestException('You cannot update other users');
+    }
+
+    const userObject = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!userObject) throw new BadRequestException('User not found');
+
+    // Admin cannot update other admins or super-admins
+    const userHighestRole = findHighestRole(userObject.roles);
+    if (
+      (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
+      highestRole !== 'super-admin'
+    )
+      throw new BadRequestException('You cannot update other admins');
+
+    const hashedPassword = await hash(password, 10);
+    return this.userRepository.save({
+      id: userObject.id,
+      password: hashedPassword,
+    });
   }
 
   async remove(

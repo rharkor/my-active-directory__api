@@ -11,6 +11,8 @@ import { FindRolesResponseDto } from './dtos/find-roles-response.dto';
 import { FindOneResponseDto } from './dtos/find-one-response.dto';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { RemoveResponseDto } from './dtos/remove-response.dto';
+import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
+import { UpdatePasswordDto } from './dtos/update-password.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -82,6 +84,39 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FindOneResponseDto | null> {
     return this.usersService.findOne(id);
+  }
+
+  @Route({
+    isApiAvailable: true,
+    method: HttpMethod.Patch,
+    path: ':id/password',
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: UpdatePasswordResponseDto,
+      },
+      operation: {
+        summary: 'Update password',
+        description: 'Update password of one user',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/UpdatePasswordDto',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  updatePassword(
+    @Request() req: RequestWithUser | RequestWithServiceAccount,
+    @Body() user: UpdatePasswordDto,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UpdatePasswordResponseDto> {
+    return this.usersService.updatePassword(id, user.password, req);
   }
 
   @Route({
