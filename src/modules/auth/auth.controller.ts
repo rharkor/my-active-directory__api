@@ -197,6 +197,7 @@ export class AuthController {
    */
   @Route({
     method: HttpMethod.Get,
+    path: 'tokens',
     swagger: {
       responses: {
         status: 200,
@@ -218,7 +219,7 @@ export class AuthController {
 
   @Route({
     method: HttpMethod.Delete,
-    path: ':id',
+    path: 'tokens/:id',
     swagger: {
       responses: {
         status: 200,
