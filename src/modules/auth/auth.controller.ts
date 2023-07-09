@@ -46,8 +46,13 @@ export class AuthController {
       },
     },
   })
-  login(@Body() user: LoginUserDto): Promise<LoginResponseDto> {
-    return this.authService.login(user);
+  login(
+    @Body() user: LoginUserDto,
+    @Request() req: ERequest,
+  ): Promise<LoginResponseDto> {
+    const userAgent: string | string[] | undefined =
+      req.headers?.['user-agent'];
+    return this.authService.login(user, userAgent ?? '');
   }
 
   @Route({
@@ -103,8 +108,13 @@ export class AuthController {
       },
     },
   })
-  registerInit(@Body() user: CreateFirstUserDto): Promise<RegisterResponseDto> {
-    return this.authService.registerInit(user);
+  registerInit(
+    @Body() user: CreateFirstUserDto,
+    @Request() req: ERequest,
+  ): Promise<RegisterResponseDto> {
+    const userAgent: string | string[] | undefined =
+      req.headers?.['user-agent'];
+    return this.authService.registerInit(user, userAgent ?? '');
   }
 
   @Route({

@@ -70,7 +70,7 @@ export class AuthService {
     return api;
   }
 
-  async login(user: LoginUserDto) {
+  async login(user: LoginUserDto, userAgent: string) {
     const foundUser = await this.usersService.findUser(user, true);
     if (!foundUser) throw new ForbiddenException('Invalid credentials');
     if (!user.password || !foundUser.password)
@@ -80,12 +80,12 @@ export class AuthService {
     }
 
     const tokens = signToken(foundUser, this.jwtService);
-    await this.updateRefreshToken(foundUser, tokens.refreshToken);
+    await this.updateRefreshToken(foundUser, tokens.refreshToken, userAgent);
     return signToken(foundUser, this.jwtService);
   }
 
   //? Register without auth is allowed only if there are no users in the database
-  async registerInit(user: CreateFirstDto) {
+  async registerInit(user: CreateFirstDto, userAgent: string) {
     if (!(await this.usersService.noUsers()))
       throw new ForbiddenException('Users already exist');
     const passwordSecurity = checkPasswordSecurity(user.password);
@@ -109,7 +109,7 @@ export class AuthService {
     await this.rolesService.addRoleToUser(newUser, superAdminRole);
 
     const tokens = signToken(newUser, this.jwtService);
-    await this.updateRefreshToken(newUser, tokens.refreshToken);
+    await this.updateRefreshToken(newUser, tokens.refreshToken, userAgent);
     return tokens;
   }
 
@@ -119,6 +119,8 @@ export class AuthService {
   ) {
     const foundUser = await this.usersService.findUser(user, true);
     if (foundUser) throw new BadRequestException('User already exists');
+
+    const userAgent = req.headers['user-agent'] || '';
 
     let highestRole: string;
     if ('user' in req && req.user) {
@@ -168,11 +170,15 @@ export class AuthService {
 
     const newUser = await this.usersService.create(user);
     const tokens = signToken(newUser, this.jwtService);
-    this.updateRefreshToken(newUser, tokens.refreshToken);
+    this.updateRefreshToken(newUser, tokens.refreshToken, userAgent);
     return tokens;
   }
 
-  async updateRefreshToken(user: User, refreshToken: string) {
+  async updateRefreshToken(
+    user: User,
+    refreshToken: string,
+    userAgent: string,
+  ) {
     const tokenHash = await hash(refreshToken, 10);
     await this.tokenRepository.update(
       {
@@ -182,6 +188,7 @@ export class AuthService {
       },
       {
         refreshToken: tokenHash,
+        userAgent,
       },
     );
   }
@@ -189,6 +196,8 @@ export class AuthService {
   async refreshTokens(req: Request) {
     const refreshToken: string | string[] | undefined =
       req.headers?.['x-refresh'];
+    const userAgent: string | string[] | undefined =
+      req.headers?.['user-agent'];
     const accessToken: string | undefined = req.headers?.['authorization']
       ?.toString()
       .split(' ')[1];
@@ -210,6 +219,7 @@ export class AuthService {
       Logger.debug('Access token invalid');
       throw new ForbiddenException('Invalid credentials');
     }
+
     //? Verify the refresh token
     try {
       rUser = this.jwtService.verify(refreshToken, {
@@ -224,24 +234,36 @@ export class AuthService {
       Logger.debug('User ids do not match in tokens');
       throw new ForbiddenException('Invalid credentials');
     }
+
     //? Find the user in the database
     const user = await this.usersService.findUser(rUser, false, {
-      relations: ['refreshToken'],
+      relations: {
+        refreshTokens: true,
+      },
     });
     if (!user) {
       Logger.debug('User not found in database');
       throw new ForbiddenException('Invalid credentials');
     }
-    if (!user.refreshToken) {
+    if (!user.refreshTokens || user.refreshTokens.length === 0) {
       Logger.debug('Token not found in database');
       throw new ForbiddenException('Invalid credentials');
     }
-    if (!(await bcryptCompare(refreshToken, user.refreshToken.refreshToken))) {
+    //? Find the refresh token in the database
+    let foundToken: Token | undefined;
+    for (const token of user.refreshTokens) {
+      if (await bcryptCompare(refreshToken, token.refreshToken)) {
+        foundToken = token;
+        break;
+      }
+    }
+    if (!foundToken) {
       Logger.debug('Refresh token does not match');
       throw new ForbiddenException('Invalid credentials');
     }
+
     const tokens = signToken(user, this.jwtService);
-    await this.updateRefreshToken(user, tokens.refreshToken);
+    await this.updateRefreshToken(user, tokens.refreshToken, userAgent ?? '');
     return tokens;
   }
 }

@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import User from '../../users/entities/user.entity';
 
 @Entity()
+@Unique('userAgent', ['userAgent', 'user'])
 class Token {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,7 +19,14 @@ class Token {
   })
   refreshToken: string;
 
-  @OneToOne(() => User, (user) => user.refreshToken)
+  @Column({
+    default: '',
+  })
+  userAgent: string;
+
+  @ManyToOne(() => User, (user) => user.refreshTokens, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   user: User;
 }

@@ -4,7 +4,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import Role from '../../roles/entities/role.entity';
@@ -56,8 +56,8 @@ class User {
   @JoinTable()
   roles?: Role[];
 
-  @OneToOne(() => Token, (token) => token.user)
-  refreshToken?: Token;
+  @OneToMany(() => Token, (token) => token.user)
+  refreshTokens?: Token[];
 }
 
 export default User;
