@@ -299,6 +299,7 @@ export class AuthService {
       filterableColumns: {
         id: true,
       },
+      defaultLimit: 5,
     });
     const data: TokenUA[] = res.data.map((token) => {
       const ua = new UAParser(token.userAgent);
