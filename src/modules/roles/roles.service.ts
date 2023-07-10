@@ -31,7 +31,7 @@ export class RolesService {
 
   async findAll(query: PaginateQuery): Promise<Paginated<Role>> {
     return paginate<Role>(query, this.roleRepository, {
-      sortableColumns: ['name'],
+      sortableColumns: ['id', 'name', 'displayName', 'description'],
       filterableColumns: {
         name: true,
         displayName: true,
@@ -39,7 +39,7 @@ export class RolesService {
         id: true,
         deletable: true,
       },
-      defaultLimit: 100,
+      defaultSortBy: [['id', 'ASC']],
     });
   }
 
