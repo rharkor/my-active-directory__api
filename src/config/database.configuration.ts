@@ -1,4 +1,4 @@
-export default () => ({
+const conf = () => ({
   db_kind: process.env.DATABASE_KIND || 'postgres',
   db_host: process.env.DATABASE_HOST || 'localhost',
   db_port: process.env.DATABASE_PORT
@@ -8,3 +8,5 @@ export default () => ({
   db_pass: process.env.DATABASE_PASS || 'root',
   db_name: process.env.DATABASE_NAME || 'basic',
 });
+
+export default conf;
