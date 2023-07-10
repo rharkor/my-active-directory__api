@@ -37,7 +37,8 @@
     "sql:delete": "ts-node ./src/database/scripts/delete-all",
     "sql:default-roles": "ts-node ./src/database/scripts/default-roles",
     "sql:backup": "ts-node ./src/database/scripts/make-backup-cli",
-    "sql:restore": "ts-node ./src/database/scripts/restore-backup-cli"
+    "sql:restore": "ts-node ./src/database/scripts/restore-backup-cli",
+    "sql:clean-backups": "ts-node ./src/database/scripts/clean-backup-cli"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
