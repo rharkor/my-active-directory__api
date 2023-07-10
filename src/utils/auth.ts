@@ -3,9 +3,10 @@ import Token from '@/modules/auth/entities/token.entity';
 import User from '@/modules/users/entities/user.entity';
 import { PayloadType } from '@/types/auth';
 import { JwtService } from '@nestjs/jwt';
-import { hash } from 'bcrypt';
+import { hash as bhash, compare } from 'bcrypt';
 import jwtDecode from 'jwt-decode';
 import { Repository } from 'typeorm';
+import * as crypto from 'crypto-js';
 
 export const passwordRegex = new RegExp(
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
@@ -25,8 +26,14 @@ export const checkPasswordSecurity = (password: string) => {
 };
 
 export const signToken = (user: User, jwtService: JwtService) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...payload }: PayloadType & { password?: string } = user;
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    password,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    refreshTokens,
+    ...payload
+  }: PayloadType & { password?: string; refreshTokens?: Token[] } = user;
+
   return {
     accessToken: jwtService.sign(payload),
     refreshToken: jwtService.sign(payload, {
@@ -37,12 +44,12 @@ export const signToken = (user: User, jwtService: JwtService) => {
 
 export const updateRefreshToken = async (
   user: User,
-  refreshToken: string,
+  refreshToken: string | undefined,
   userAgent: string,
   tokenRepository: Repository<Token>,
   ip: string,
 ) => {
-  const tokenHash = await hash(refreshToken, 10);
+  const tokenHash = refreshToken ? await hash(refreshToken, 10) : undefined;
   const res = await tokenRepository.update(
     {
       user: {
@@ -56,6 +63,7 @@ export const updateRefreshToken = async (
     },
   );
   if (res.affected === 0) {
+    if (!refreshToken) throw new Error('No refresh token provided');
     const decoded = jwtDecode(refreshToken) as {
       exp: number;
     };
@@ -69,4 +77,17 @@ export const updateRefreshToken = async (
       createdByIp: ip,
     });
   }
+};
+
+const PASSWORD_HASHER = process.env.PASSWORD_HASHER;
+if (!PASSWORD_HASHER) throw new Error('PASSWORD_HASHER not set in .env file');
+
+export const hash = async (value: string, saltOrRounds: string | number) => {
+  const preHashed = crypto.HmacSHA256(value, PASSWORD_HASHER).toString();
+  return await bhash(preHashed, saltOrRounds);
+};
+
+export const bcryptCompare = async (value: string, hash: string) => {
+  const preHashed = crypto.HmacSHA256(value, PASSWORD_HASHER).toString();
+  return compare(preHashed, hash);
 };

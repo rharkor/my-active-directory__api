@@ -3,9 +3,9 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { compare as bcryptCompare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { CreateDto } from '../users/dtos/create.dto';
@@ -17,7 +17,9 @@ import {
   RequestWithUser,
 } from '@/types/auth';
 import {
+  bcryptCompare,
   checkPasswordSecurity,
+  hash,
   signToken,
   updateRefreshToken,
 } from '@/utils/auth';
@@ -63,8 +65,13 @@ export class AuthService {
     const user = await this.usersService.findUser(userInfo, true);
     if (!user?.password) throw new ForbiddenException('Invalid credentials');
     if (user && (await bcryptCompare(pass, user.password))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result }: PayloadType & { password?: string } = user;
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        password,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        refreshTokens,
+        ...result
+      }: PayloadType & { password?: string; refreshTokens?: Token[] } = user;
       return result;
     }
     return null;
@@ -255,7 +262,7 @@ export class AuthService {
     }
     if (!user.refreshTokens || user.refreshTokens.length === 0) {
       Logger.debug('Token not found in database');
-      throw new ForbiddenException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
     //? Find the refresh token in the database
     let foundToken: Token | undefined;
@@ -265,21 +272,25 @@ export class AuthService {
         break;
       }
     }
+
     if (!foundToken) {
       Logger.debug('Refresh token does not match');
-      throw new ForbiddenException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const tokens = signToken(user, this.jwtService);
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    //? Do not pass the refresh token to not refresh it
     await updateRefreshToken(
       user,
-      tokens.refreshToken,
+      undefined,
       userAgent ?? '',
       this.tokenRepository,
       ip?.toString() ?? '',
     );
-    return tokens;
+    return {
+      accessToken: tokens.accessToken,
+    };
   }
 
   async findAllTokens(query: PaginateQuery): Promise<Paginated<TokenUA>> {

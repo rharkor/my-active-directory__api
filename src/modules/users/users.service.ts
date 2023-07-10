@@ -13,9 +13,13 @@ import { UpdateDto } from './dtos/update.dto';
 import { findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
-import { compare, hash } from 'bcrypt';
 import Role from '../roles/entities/role.entity';
-import { signToken, updateRefreshToken } from '@/utils/auth';
+import {
+  bcryptCompare,
+  hash,
+  signToken,
+  updateRefreshToken,
+} from '@/utils/auth';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
@@ -219,7 +223,7 @@ export class UsersService {
       throw new BadRequestException('User does not have a password');
     }
 
-    if (!(await compare(oldPassword, userObject.password)))
+    if (!(await bcryptCompare(oldPassword, userObject.password)))
       throw new BadRequestException('Invalid password');
 
     const hashedPassword = await hash(password, 10);
