@@ -54,6 +54,7 @@ export class RolesService {
         deletable: true,
       },
       defaultSortBy: [['id', 'ASC']],
+      defaultLimit: 20,
     });
   }
 
