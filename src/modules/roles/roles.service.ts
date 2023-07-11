@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import Role from './entities/role.entity';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import User from '../users/entities/user.entity';
-import { CreateRoleDto } from './dtos/create.dto';
+import { CreateDto } from './dtos/create.dto';
+import { UpdateDto } from './dtos/update.dto';
 
 @Injectable()
 export class RolesService {
@@ -15,10 +16,10 @@ export class RolesService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(createRoleDto: CreateRoleDto) {
+  async create(createDto: CreateDto) {
     try {
       return await this.roleRepository.save({
-        ...createRoleDto,
+        ...createDto,
         deletable: true,
       });
     } catch (error) {
@@ -27,6 +28,19 @@ export class RolesService {
       }
       throw error;
     }
+  }
+
+  async update(id: number, updateDto: UpdateDto) {
+    const role = await this.roleRepository.findOne({
+      where: { id },
+    });
+    if (!role) {
+      throw new BadRequestException('Role not found');
+    }
+    return await this.roleRepository.save({
+      ...role,
+      ...updateDto,
+    });
   }
 
   async findAll(query: PaginateQuery): Promise<Paginated<Role>> {

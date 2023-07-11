@@ -1,4 +1,4 @@
-import { CreateRoleDto } from '@/modules/roles/dtos/create.dto';
+import { CreateDto as CreateRoleDto } from '@/modules/roles/dtos/create.dto';
 import Role from '@/modules/roles/entities/role.entity';
 import User from 'src/modules/users/entities/user.entity';
 
