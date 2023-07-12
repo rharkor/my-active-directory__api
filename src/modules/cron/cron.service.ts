@@ -43,7 +43,7 @@ export class CronService {
       port: parseInt(process.env.BACKUPS_PORT || '22'),
       username: process.env.BACKUPS_USERNAME,
       password: process.env.BACKUPS_PASSWORD,
-      privateKey: process.env.BACKUPS_PRIVATE_KEY,
+      privateKey: fs.readFileSync(process.env.BACKUPS_PRIVATE_KEY || ''),
     };
     const useScp = process.env.BACKUPS_USE_SCP === 'true';
     const backupsPath = process.env.BACKUPS_PATH;
@@ -68,7 +68,7 @@ export class CronService {
       port: parseInt(process.env.BACKUPS_PORT || '22'),
       username: process.env.BACKUPS_USERNAME,
       password: process.env.BACKUPS_PASSWORD,
-      privateKey: process.env.BACKUPS_PRIVATE_KEY,
+      privateKey: fs.readFileSync(process.env.BACKUPS_PRIVATE_KEY || ''),
     };
     const useScp = process.env.BACKUPS_USE_SCP === 'true';
     const backupsPath = process.env.BACKUPS_PATH;
