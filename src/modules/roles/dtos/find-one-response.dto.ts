@@ -24,4 +24,10 @@ export class FindOneResponseDto {
     example: 'Super admin',
   })
   description?: string;
+
+  @ApiProperty({
+    description: 'Color',
+    example: '#000000',
+  })
+  color?: string;
 }

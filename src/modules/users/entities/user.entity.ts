@@ -6,6 +6,7 @@ import {
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
+  VirtualColumn,
 } from 'typeorm';
 import Role from '../../roles/entities/role.entity';
 import Token from '../../auth/entities/token.entity';
@@ -58,6 +59,14 @@ class User {
 
   @OneToMany(() => Token, (token) => token.user)
   refreshTokens?: Token[];
+
+  @VirtualColumn({
+    type: 'integer',
+    query: (alias) => {
+      return `SELECT COUNT(*) FROM user_roles_role r WHERE r."userId" = ${alias}.id`;
+    },
+  })
+  activeRoles?: number;
 }
 
 export default User;

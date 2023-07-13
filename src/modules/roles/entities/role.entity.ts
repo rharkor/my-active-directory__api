@@ -24,6 +24,11 @@ class Role {
   })
   deletable: boolean;
 
+  @Column({
+    nullable: true,
+  })
+  color?: string;
+
   @ManyToMany(() => User, (user) => user.roles)
   users?: User[];
 }

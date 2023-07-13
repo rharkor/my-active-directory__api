@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Matches, IsString, IsOptional } from 'class-validator';
+import { Matches, IsString, IsOptional, IsHexColor } from 'class-validator';
 
 export class UpdateDto {
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
@@ -30,4 +30,13 @@ export class UpdateDto {
     nullable: true,
   })
   description?: string;
+
+  @IsString()
+  @IsHexColor()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Color',
+    example: '#000000',
+  })
+  color?: string;
 }

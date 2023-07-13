@@ -8,12 +8,14 @@ export const defaultRoles: CreateRoleDto[] = [
     displayName: 'Super Admin',
     description: 'Super admin of the application, can do anything',
     deletable: false,
+    color: '#ff4d4d', //? Red
   },
   {
     name: 'admin',
     displayName: 'Admin',
     description: 'Admin can manage users and roles',
     deletable: false,
+    color: '#FFA500', //? Orange
   },
 ];
 

@@ -5,6 +5,7 @@ import {
   IsString,
   IsOptional,
   IsBoolean,
+  IsHexColor,
 } from 'class-validator';
 
 export class CreateDto {
@@ -32,6 +33,15 @@ export class CreateDto {
     example: 'Super admin',
   })
   description?: string;
+
+  @IsString()
+  @IsHexColor()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Color',
+    example: '#000000',
+  })
+  color?: string;
 
   @IsOptional()
   @IsBoolean()
