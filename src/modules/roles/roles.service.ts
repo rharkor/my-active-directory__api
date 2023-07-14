@@ -58,6 +58,15 @@ export class RolesService {
     });
   }
 
+  async findAllNoPagination(): Promise<Role[]> {
+    return this.roleRepository.find({
+      select: ['name', 'color'],
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
   async userHaveRole(id: number, roles: string[]): Promise<Role[]> {
     //? Select all roles that have the user with the given id
     const qb = this.roleRepository

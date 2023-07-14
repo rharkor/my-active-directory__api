@@ -11,6 +11,7 @@ import { DeleteResult } from 'typeorm';
 import { UpdateDto } from './dtos/update.dto';
 import { CreateDto } from './dtos/create.dto';
 import Role from './entities/role.entity';
+import { FindAllNoPaginationResponseDto } from './dtos/find-all-no-pagination-response.dto';
 
 @Controller('roles')
 @ApiTags('roles')
@@ -35,6 +36,27 @@ export class RolesController {
   })
   findAll(@Paginate() query: PaginateQuery): Promise<FindAllResponseDto> {
     return this.rolesService.findAll(query);
+  }
+
+  @Route({
+    method: HttpMethod.Get,
+    path: 'no-pagination',
+    isApiAvailable: true,
+    roles: ['super-admin', 'admin', 'service-account'],
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindAllNoPaginationResponseDto,
+      },
+      operation: {
+        summary: 'Get all no pagination',
+        description: 'Retrieve all roles without pagination',
+      },
+    },
+  })
+  async findAllNoPagination(): Promise<FindAllNoPaginationResponseDto> {
+    return { data: await this.rolesService.findAllNoPagination() };
   }
 
   @Route({
