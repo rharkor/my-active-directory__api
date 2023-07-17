@@ -163,6 +163,18 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot update other admins');
 
+    //* Check if all roles exist
+    if (user.roles) {
+      const roles = await this.roleRepository.findBy({
+        name: In(user.roles),
+      });
+      if (roles.length !== user.roles.length)
+        throw new BadRequestException('Invalid roles');
+
+      //? Set roles
+      user.roles = roles;
+    }
+
     const res = (await this.userRepository.save({
       id: userObject.id,
       ...user,
