@@ -24,6 +24,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
 import Token from '../auth/entities/token.entity';
+import { RemoveDto } from './dtos/remove.dto';
 
 @Injectable()
 export class UsersService {
@@ -100,8 +101,14 @@ export class UsersService {
     return null;
   }
 
-  async noUsers(): Promise<boolean> {
-    return (await this.userRepository.createQueryBuilder().getCount()) === 0;
+  async noSUUsers(): Promise<boolean> {
+    return (
+      (await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.roles', 'roles')
+        .where('roles.name = :name', { name: 'super-admin' })
+        .getCount()) === 0
+    );
   }
 
   async create(user: CreateDto): Promise<User> {
@@ -257,6 +264,7 @@ export class UsersService {
   async remove(
     id: number,
     req: RequestWithUser | RequestWithServiceAccount,
+    removeDto: RemoveDto,
   ): Promise<DeleteResult> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
@@ -274,8 +282,34 @@ export class UsersService {
       where: {
         id,
       },
+      select: ['id', 'username', 'email', 'password', 'roles'],
     });
     if (!userToDelete) throw new BadRequestException('User not found');
+
+    if (removeDto.force) {
+      if (highestRole === 'user')
+        throw new BadRequestException('You cannot force delete users');
+
+      if (!removeDto.username && !removeDto.email)
+        //? Verify the provided username/email and password
+        throw new BadRequestException('Username or email is required');
+      if (!removeDto.password)
+        throw new BadRequestException('Password is required');
+
+      if (removeDto.username && removeDto.username !== userToDelete.username)
+        throw new BadRequestException('Invalid username');
+      if (removeDto.email && removeDto.email !== userToDelete.email)
+        throw new BadRequestException('Invalid email');
+
+      if (!userToDelete.password)
+        throw new BadRequestException('User does not have a password');
+
+      const samePassword = await bcryptCompare(
+        removeDto.password,
+        userToDelete.password,
+      );
+      if (!samePassword) throw new BadRequestException('Invalid password');
+    }
 
     // Admin cannot delete other admins or super-admins
     const userHighestRole = findHighestRole(userToDelete.roles);

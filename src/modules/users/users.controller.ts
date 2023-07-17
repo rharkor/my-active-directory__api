@@ -13,6 +13,7 @@ import { UpdateResponseDto } from './dtos/update-response.dto';
 import { RemoveResponseDto } from './dtos/remove-response.dto';
 import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
 import { UpdatePasswordDto } from './dtos/update-password.dto';
+import { RemoveDto } from './dtos/remove.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -178,7 +179,8 @@ export class UsersController {
   remove(
     @Request() req: RequestWithUser | RequestWithServiceAccount,
     @Param('id', ParseIntPipe) id: number,
+    @Body() removeDto: RemoveDto,
   ): Promise<RemoveResponseDto> {
-    return this.usersService.remove(id, req);
+    return this.usersService.remove(id, req, removeDto);
   }
 }

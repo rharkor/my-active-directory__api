@@ -51,7 +51,7 @@ export class AuthService {
 
   async initialized() {
     return {
-      initialized: !(await this.usersService.noUsers()),
+      initialized: !(await this.usersService.noSUUsers()),
     };
   }
 
@@ -106,7 +106,7 @@ export class AuthService {
 
   //? Register without auth is allowed only if there are no users in the database
   async registerInit(user: CreateFirstDto, userAgent: string, req: Request) {
-    if (!(await this.usersService.noUsers()))
+    if (!(await this.usersService.noSUUsers()))
       throw new ForbiddenException('Users already exist');
     const passwordSecurity = checkPasswordSecurity(user.password);
     if (passwordSecurity.valid !== true)
