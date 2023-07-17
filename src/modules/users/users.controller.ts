@@ -25,6 +25,7 @@ export class UsersController {
 
   @Route({
     isApiAvailable: true,
+    roles: ['super-admin', 'admin', 'service-account'],
     method: HttpMethod.Get,
     swagger: {
       responses: {
@@ -45,6 +46,7 @@ export class UsersController {
   @Route({
     isApiAvailable: true,
     method: HttpMethod.Get,
+    roles: ['super-admin', 'admin', 'service-account'],
     path: ':id/roles',
     swagger: {
       responses: {
@@ -68,6 +70,7 @@ export class UsersController {
   @Route({
     isApiAvailable: true,
     method: HttpMethod.Get,
+    roles: ['super-admin', 'admin', 'service-account'],
     path: ':id',
     swagger: {
       responses: {
