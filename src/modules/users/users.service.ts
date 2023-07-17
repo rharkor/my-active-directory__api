@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
@@ -10,7 +14,7 @@ import {
 import User from './entities/user.entity';
 import { CreateDto } from './dtos/create.dto';
 import { UpdateDto } from './dtos/update.dto';
-import { findHighestRole } from '@/utils/roles';
+import { defaultRoles, findHighestRole } from '@/utils/roles';
 import { RequestWithServiceAccount, RequestWithUser } from '@/types/auth';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import Role from '../roles/entities/role.entity';
@@ -159,7 +163,11 @@ export class UsersService {
     const userHighestRole = findHighestRole(userObject.roles);
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
-      highestRole !== 'super-admin'
+      highestRole !== 'super-admin' &&
+      (!('user' in req) ||
+        !req.user ||
+        !('id' in req.user) ||
+        req.user.id !== id)
     )
       throw new BadRequestException('You cannot update other admins');
 
@@ -171,13 +179,45 @@ export class UsersService {
       if (roles.length !== user.roles.length)
         throw new BadRequestException('Invalid roles');
 
+      //? Get only the roles that the user don't already have
+      const newRoles = roles.filter((role) => {
+        if (!userObject.roles) return true;
+        return !userObject.roles.some((r) => r.name === role.name);
+      });
+
+      //* If the user is service-account, do not allow any roles of the list defaultRoles to be added
+      if (highestRole === 'service-account' && newRoles) {
+        const roles = newRoles.filter((role) =>
+          defaultRoles.some((r) => r.name === role.name),
+        );
+        if (roles.length > 0)
+          throw new ForbiddenException(
+            `You are not allowed to add the following roles: ${roles
+              .map((r) => r.name)
+              .join(', ')}`,
+          );
+      }
+
+      //* If the user is admin do not allow the role super-admin and admin to be added
+      if (highestRole === 'admin' && newRoles) {
+        const roles = newRoles.filter(
+          (role) => role.name === 'super-admin' || role.name === 'admin',
+        );
+        if (roles.length > 0)
+          throw new ForbiddenException(
+            `You are not allowed to add the following roles: ${roles
+              .map((r) => r.name)
+              .join(', ')}`,
+          );
+      }
+
       //? Set roles
-      user.roles = roles;
+      (user as User).roles = roles;
     }
 
     const res = (await this.userRepository.save({
       id: userObject.id,
-      ...user,
+      ...(user as Omit<User, 'id'>),
     })) as User & { tokens?: { accessToken: string; refreshToken: string } };
 
     const newUser = {
@@ -236,7 +276,11 @@ export class UsersService {
     const userHighestRole = findHighestRole(userObject.roles);
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
-      highestRole !== 'super-admin'
+      highestRole !== 'super-admin' &&
+      (!('user' in req) ||
+        !req.user ||
+        !('id' in req.user) ||
+        req.user.id !== id)
     )
       throw new BadRequestException('You cannot update other admins');
 
@@ -327,7 +371,11 @@ export class UsersService {
     const userHighestRole = findHighestRole(userToDelete.roles);
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
-      highestRole !== 'super-admin'
+      highestRole !== 'super-admin' &&
+      (!('user' in req) ||
+        !req.user ||
+        !('id' in req.user) ||
+        req.user.id !== id)
     )
       throw new BadRequestException('You cannot delete other admins');
 

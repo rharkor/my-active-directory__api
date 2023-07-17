@@ -80,9 +80,9 @@ export class UpdateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: [{ id: 1, name: 'admin' }],
+    example: ['admin', 'user'],
     required: false,
     type: [Role],
   })
-  roles?: DeepPartial<Role[]>;
+  roles?: DeepPartial<string[]>;
 }
