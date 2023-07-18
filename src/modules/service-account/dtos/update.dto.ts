@@ -27,7 +27,6 @@ export class UpdateServiceAccountDto {
 
   @IsString()
   @IsOptional()
-  @MinLength(1)
   @MaxLength(150)
   @ApiProperty({
     description: 'Description',
