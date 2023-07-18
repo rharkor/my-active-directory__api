@@ -12,8 +12,8 @@ import { FindOneResponseDto } from './dtos/find-one-response.dto';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { RemoveResponseDto } from './dtos/remove-response.dto';
 
-@Controller('service-account')
-@ApiTags('service-account')
+@Controller('service-accounts')
+@ApiTags('service-accounts')
 export class ServiceAccountController {
   constructor(private readonly serviceAccountService: ServiceAccountService) {}
 
