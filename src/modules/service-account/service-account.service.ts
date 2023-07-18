@@ -59,6 +59,14 @@ export class ServiceAccountService {
     return this.serviceAccountRepository.update(id, updateServiceAccountDto);
   }
 
+  async updateToken(id: number) {
+    const token = uuid();
+    await this.serviceAccountRepository.update(id, {
+      token,
+    });
+    return { token };
+  }
+
   remove(id: number) {
     return this.serviceAccountRepository.delete(id);
   }

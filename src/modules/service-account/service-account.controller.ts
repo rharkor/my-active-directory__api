@@ -11,6 +11,7 @@ import { ApiErrorResponse } from '@/types';
 import { FindOneResponseDto } from './dtos/find-one-response.dto';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { RemoveResponseDto } from './dtos/remove-response.dto';
+import { UpdateTokenResponseDto } from './dtos/update-token.dto';
 
 @Controller('service-accounts')
 @ApiTags('service-accounts')
@@ -84,6 +85,28 @@ export class ServiceAccountController {
     @Body() createServiceAccountDto: CreateServiceAccountDto,
   ): Promise<CreateResponseDto> {
     return this.serviceAccountService.create(createServiceAccountDto);
+  }
+
+  @Route({
+    method: HttpMethod.Patch,
+    roles: ['super-admin', 'admin'],
+    path: ':id/token',
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: UpdateTokenResponseDto,
+      },
+      operation: {
+        summary: 'Update token',
+        description: 'Update one service account token',
+      },
+    },
+  })
+  updateToken(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UpdateTokenResponseDto> {
+    return this.serviceAccountService.updateToken(id);
   }
 
   @Route({
