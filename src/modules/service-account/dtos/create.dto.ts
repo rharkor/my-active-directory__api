@@ -10,4 +10,13 @@ export class CreateServiceAccountDto {
     required: true,
   })
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Description',
+    example: 'Service account for my app',
+    required: false,
+  })
+  description?: string;
 }

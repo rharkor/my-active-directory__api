@@ -9,6 +9,7 @@ export class FindAllResponseDto extends ApiPaginationResponse {
       {
         id: '1',
         name: 'service-account1',
+        description: 'Service account for my app',
       },
     ],
   })

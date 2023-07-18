@@ -10,4 +10,13 @@ export class UpdateServiceAccountDto {
     required: false,
   })
   name?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Description',
+    example: 'Service account for my app',
+    required: false,
+  })
+  description?: string;
 }

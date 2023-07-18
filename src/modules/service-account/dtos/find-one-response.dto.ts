@@ -10,4 +10,9 @@ export class FindOneResponseDto {
     description: 'Name',
   })
   name: string;
+
+  @ApiProperty({
+    description: 'Description',
+  })
+  description?: string;
 }

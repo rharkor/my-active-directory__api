@@ -11,6 +11,11 @@ class ServiceAccount {
   name: string;
 
   @Column({
+    nullable: true,
+  })
+  description: string;
+
+  @Column({
     select: false,
     unique: true,
   })
