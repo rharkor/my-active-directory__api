@@ -1,3 +1,4 @@
+import { slugRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Matches,
@@ -9,7 +10,7 @@ import {
 } from 'class-validator';
 
 export class CreateDto {
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+  @Matches(slugRegex, {
     message: 'name must be kebab-case',
   })
   @ApiProperty({

@@ -1,8 +1,9 @@
+import { slugRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches, IsString, IsOptional, IsHexColor } from 'class-validator';
 
 export class UpdateDto {
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+  @Matches(slugRegex, {
     message: 'name must be kebab-case',
   })
   @IsOptional()

@@ -12,6 +12,8 @@ export const passwordRegex = new RegExp(
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
 );
 
+export const slugRegex = new RegExp(/^[a-z0-9]+(?:-|[a-z0-9])*$/);
+
 export const checkPasswordSecurity = (password: string) => {
   const valid = passwordRegex.test(password);
   if (valid)

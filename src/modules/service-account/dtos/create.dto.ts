@@ -1,3 +1,4 @@
+import { slugRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
@@ -13,7 +14,7 @@ export class CreateServiceAccountDto {
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(50)
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+  @Matches(slugRegex, {
     message: 'name must be kebab-case',
   })
   @ApiProperty({
