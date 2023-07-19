@@ -88,6 +88,7 @@ jobs:
           echo REDIS_PORT=6379 >> .env
           echo REDIS_PASS=${{ secrets.REDIS_PASS }} >> .env
           echo BACKUPS_USE_SCP=false >> .env
+          echo PASSWORD_HASHER=${{ secrets.PASSWORD_HASHER }} >> .env
 
           touch .env.docker
           echo DATABASE_USER=${{ vars.DATABASE_USER }} >> .env.docker
