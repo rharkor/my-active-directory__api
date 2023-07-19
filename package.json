@@ -1,6 +1,6 @@
 {
   "name": "my-active-directory__api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The backend of the My Active Directory application",
   "author": "HUORT Louis",
   "private": false,
