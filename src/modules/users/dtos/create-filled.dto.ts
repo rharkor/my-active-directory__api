@@ -4,12 +4,15 @@ import {
   IsObject,
   IsEmail,
   MinLength,
-  MaxLength,
   IsArray,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { passwordRegex } from '@/utils/auth';
+import { DeepPartial } from 'typeorm';
+import Role from '@/modules/roles/entities/role.entity';
 
-export class UpdateDto {
+export class CreateFilledDto {
   @IsOptional()
   @IsString()
   @IsEmail()
@@ -24,6 +27,7 @@ export class UpdateDto {
   @IsOptional()
   @IsString()
   @MinLength(5)
+  @MaxLength(50)
   @ApiProperty({
     description: 'Username',
     example: 'admin',
@@ -36,8 +40,20 @@ export class UpdateDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(2)
+  @MinLength(8)
   @MaxLength(50)
+  @ApiProperty({
+    description: `Password (regex: ${passwordRegex})`,
+    example: 'admin123',
+    required: false,
+    type: String,
+    minLength: 8,
+    maxLength: 50,
+  })
+  password?: string;
+
+  @IsOptional()
+  @IsString()
   @ApiProperty({
     description: 'First name',
     example: 'John',
@@ -46,12 +62,12 @@ export class UpdateDto {
     minLength: 2,
     maxLength: 50,
   })
+  @MinLength(2)
+  @MaxLength(50)
   firstName?: string;
 
   @IsOptional()
   @IsString()
-  @MinLength(2)
-  @MaxLength(50)
   @ApiProperty({
     description: 'Last name',
     example: 'Doe',
@@ -78,8 +94,8 @@ export class UpdateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: ['admin', 'user'],
+    example: [{ id: 1, name: 'admin' }],
     required: false,
   })
-  roles?: string[];
+  roles?: DeepPartial<Role[]>;
 }

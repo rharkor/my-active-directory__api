@@ -8,8 +8,10 @@ import {
   IsArray,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { DeepPartial } from 'typeorm';
+import Role from '@/modules/roles/entities/role.entity';
 
-export class UpdateDto {
+export class UpdateFilledDto {
   @IsOptional()
   @IsString()
   @IsEmail()
@@ -78,8 +80,13 @@ export class UpdateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: ['admin', 'user'],
+    example: [
+      {
+        id: 1,
+        name: 'admin',
+      },
+    ],
     required: false,
   })
-  roles?: string[];
+  roles?: DeepPartial<Role[]>;
 }

@@ -176,7 +176,7 @@ export class AuthService {
     //* If the user is service-account, do not allow any roles of the list defaultRoles to be added
     if (highestRole === 'service-account' && user.roles) {
       const roles = user.roles.filter((role) =>
-        defaultRoles.some((r) => r.name === role.name),
+        defaultRoles.some((r) => r.name === role),
       );
       if (roles.length > 0)
         throw new ForbiddenException(
@@ -187,7 +187,7 @@ export class AuthService {
     //* If the user is admin do not allow the role super-admin and admin to be added
     if (highestRole === 'admin' && user.roles) {
       const roles = user.roles.filter(
-        (role) => role.name === 'super-admin' || role.name === 'admin',
+        (role) => role === 'super-admin' || role === 'admin',
       );
       if (roles.length > 0)
         throw new ForbiddenException(

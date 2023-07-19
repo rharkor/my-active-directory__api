@@ -7,8 +7,6 @@ import {
   IsArray,
   MaxLength,
 } from 'class-validator';
-import Role from '../../roles/entities/role.entity';
-import { DeepPartial } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { passwordRegex } from '@/utils/auth';
 
@@ -94,9 +92,8 @@ export class CreateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: [{ id: 1, name: 'admin' }],
+    example: ['admin'],
     required: false,
-    type: [Role],
   })
-  roles?: DeepPartial<Role[]>;
+  roles?: string[];
 }

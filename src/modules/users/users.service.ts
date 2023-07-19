@@ -29,6 +29,7 @@ import { UpdateResponseDto } from './dtos/update-response.dto';
 import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
 import Token from '../auth/entities/token.entity';
 import { RemoveDto } from './dtos/remove.dto';
+import { CreateFilledDto } from './dtos/create-filled.dto';
 
 @Injectable()
 export class UsersService {
@@ -117,6 +118,10 @@ export class UsersService {
 
   async create(user: CreateDto): Promise<User> {
     //* Check if all roles exist
+    const userFilled: CreateFilledDto = {
+      ...user,
+      roles: undefined,
+    };
     if (user.roles) {
       const roles = await this.roleRepository.findBy({
         name: In(user.roles),
@@ -125,10 +130,10 @@ export class UsersService {
         throw new BadRequestException('Invalid roles');
 
       //? Set roles
-      user.roles = roles;
+      userFilled.roles = roles;
     }
 
-    const userObject = this.userRepository.create(user);
+    const userObject = this.userRepository.create(userFilled);
     return this.userRepository.save(userObject);
   }
 
@@ -171,6 +176,11 @@ export class UsersService {
     )
       throw new BadRequestException('You cannot update other admins');
 
+    const userFilled: CreateFilledDto = {
+      ...user,
+      roles: undefined,
+    };
+
     //* Check if all roles exist
     if (user.roles) {
       const roles = await this.roleRepository.findBy({
@@ -212,12 +222,12 @@ export class UsersService {
       }
 
       //? Set roles
-      (user as User).roles = roles;
+      userFilled.roles = roles;
     }
 
     const res = (await this.userRepository.save({
       id: userObject.id,
-      ...(user as Omit<User, 'id'>),
+      ...userFilled,
     })) as User & { tokens?: { accessToken: string; refreshToken: string } };
 
     const newUser = {
