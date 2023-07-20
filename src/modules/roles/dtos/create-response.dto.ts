@@ -24,10 +24,4 @@ export class CreateResponseDto {
     example: 'Super admin',
   })
   description?: string;
-
-  @ApiProperty({
-    description: 'Deletable',
-    example: true,
-  })
-  deletable: boolean;
 }

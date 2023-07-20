@@ -78,8 +78,17 @@ export class UpdateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: ['admin', 'user'],
+    example: ['example', 'user'],
     required: false,
   })
   roles?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'SysRoles',
+    example: ['super-admin'],
+    required: false,
+  })
+  sysroles?: string[];
 }

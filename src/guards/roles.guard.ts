@@ -31,7 +31,11 @@ export class RolesGuard implements CanActivate {
     //* Check if user has the required role
     const { user } = request;
     if (!user) throw new ForbiddenException('Invalid credentials');
-    const userRoles = await this.rolesService.userHaveRole(user.id, roles);
+    const userRoles = await this.rolesService.userHaveRole(
+      user.id,
+      roles,
+      true,
+    );
     if (userRoles.length > 0) return true;
 
     throw new ForbiddenException('You are not allowed to do this');

@@ -30,6 +30,7 @@ import { UpdatePasswordResponseDto } from './dtos/update-password-response.dto';
 import Token from '../auth/entities/token.entity';
 import { RemoveDto } from './dtos/remove.dto';
 import { CreateFilledDto } from './dtos/create-filled.dto';
+import SysRole from '../roles/entities/sys-role.entity';
 
 @Injectable()
 export class UsersService {
@@ -38,6 +39,8 @@ export class UsersService {
     private userRepository: Repository<User>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(SysRole)
+    private sysRoleRepository: Repository<SysRole>,
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
     private jwtService: JwtService,
@@ -110,8 +113,8 @@ export class UsersService {
     return (
       (await this.userRepository
         .createQueryBuilder('user')
-        .leftJoinAndSelect('user.roles', 'roles')
-        .where('roles.name = :name', { name: 'super-admin' })
+        .leftJoinAndSelect('user.sysroles', 'sysroles')
+        .where('sysroles.name = :name', { name: 'super-admin' })
         .getCount()) === 0
     );
   }
@@ -121,6 +124,7 @@ export class UsersService {
     const userFilled: CreateFilledDto = {
       ...user,
       roles: undefined,
+      sysroles: undefined,
     };
     if (user.roles) {
       const roles = await this.roleRepository.findBy({
@@ -131,6 +135,18 @@ export class UsersService {
 
       //? Set roles
       userFilled.roles = roles;
+    }
+
+    //* Check if all sysroles exist
+    if (user.sysroles) {
+      const sysroles = await this.sysRoleRepository.findBy({
+        name: In(user.sysroles),
+      });
+      if (sysroles.length !== user.sysroles.length)
+        throw new BadRequestException('Invalid sysroles');
+
+      //? Set sysroles
+      userFilled.sysroles = sysroles;
     }
 
     const userObject = this.userRepository.create(userFilled);
@@ -144,7 +160,7 @@ export class UsersService {
   ): Promise<UpdateResponseDto> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
-      highestRole = findHighestRole(req.user.roles);
+      highestRole = findHighestRole(req.user.sysroles);
     else highestRole = 'service-account';
 
     if (highestRole === 'user') {
@@ -179,6 +195,7 @@ export class UsersService {
     const userFilled: CreateFilledDto = {
       ...user,
       roles: undefined,
+      sysroles: undefined,
     };
 
     //* Check if all roles exist
@@ -189,40 +206,53 @@ export class UsersService {
       if (roles.length !== user.roles.length)
         throw new BadRequestException('Invalid roles');
 
-      //? Get only the roles that the user don't already have
-      const newRoles = roles.filter((role) => {
-        if (!userObject.roles) return true;
-        return !userObject.roles.some((r) => r.name === role.name);
-      });
-
-      //* If the user is service-account, do not allow any roles of the list defaultRoles to be added
-      if (highestRole === 'service-account' && newRoles) {
-        const roles = newRoles.filter((role) =>
-          defaultRoles.some((r) => r.name === role.name),
-        );
-        if (roles.length > 0)
-          throw new ForbiddenException(
-            `You are not allowed to add the following roles: ${roles
-              .map((r) => r.name)
-              .join(', ')}`,
-          );
-      }
-
-      //* If the user is admin do not allow the role super-admin and admin to be added
-      if (highestRole === 'admin' && newRoles) {
-        const roles = newRoles.filter(
-          (role) => role.name === 'super-admin' || role.name === 'admin',
-        );
-        if (roles.length > 0)
-          throw new ForbiddenException(
-            `You are not allowed to add the following roles: ${roles
-              .map((r) => r.name)
-              .join(', ')}`,
-          );
-      }
-
       //? Set roles
       userFilled.roles = roles;
+    }
+
+    //* Check if all sysroles exist
+    if (user.sysroles) {
+      const sysroles = await this.sysRoleRepository.findBy({
+        name: In(user.sysroles),
+      });
+      if (sysroles.length !== user.sysroles.length)
+        throw new BadRequestException('Invalid sysroles');
+
+      //? Get only the sysroles that the user don't already have
+      const newSysRoles = sysroles.filter((sysrole) => {
+        if (!userObject.sysroles) return true;
+        return !userObject.sysroles.some((r) => r.name === sysrole.name);
+      });
+
+      //* If the user is service-account, do not allow any sysroles of the list defaultRoles to be added
+      if (highestRole === 'service-account' && newSysRoles) {
+        const sysroles = newSysRoles.filter((sysrole) =>
+          defaultRoles.some((r) => r.name === sysrole.name),
+        );
+        if (sysroles.length > 0)
+          throw new ForbiddenException(
+            `You are not allowed to add the following sysroles: ${sysroles
+              .map((r) => r.name)
+              .join(', ')}`,
+          );
+      }
+
+      //* If the user is admin do not allow the sysrole super-admin and admin to be added
+      if (highestRole === 'admin' && newSysRoles) {
+        const sysroles = newSysRoles.filter(
+          (sysrole) =>
+            sysrole.name === 'super-admin' || sysrole.name === 'admin',
+        );
+        if (sysroles.length > 0)
+          throw new ForbiddenException(
+            `You are not allowed to add the following sysroles: ${sysroles
+              .map((r) => r.name)
+              .join(', ')}`,
+          );
+      }
+
+      //? Set sysroles
+      userFilled.sysroles = sysroles;
     }
 
     const res = (await this.userRepository.save({
@@ -261,7 +291,7 @@ export class UsersService {
   ): Promise<UpdatePasswordResponseDto> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
-      highestRole = findHighestRole(req.user.roles);
+      highestRole = findHighestRole(req.user.sysroles);
     else highestRole = 'service-account';
 
     if (highestRole === 'user') {
@@ -334,7 +364,7 @@ export class UsersService {
   ): Promise<DeleteResult> {
     let highestRole: string;
     if ('user' in req && req.user && 'roles' in req.user)
-      highestRole = findHighestRole(req.user.roles);
+      highestRole = findHighestRole(req.user.sysroles);
     else highestRole = 'service-account';
 
     if (highestRole === 'user') {

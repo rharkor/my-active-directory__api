@@ -1,4 +1,5 @@
 import Role from '@/modules/roles/entities/role.entity';
+import SysRole from '@/modules/roles/entities/sys-role.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class FindOneResponseDto {
@@ -38,11 +39,23 @@ export class FindOneResponseDto {
     example: [
       {
         id: 2,
+        name: 'example',
+        displayName: 'Example',
+        description: 'Example role',
+      },
+    ],
+  })
+  roles?: Role[];
+
+  @ApiProperty({
+    example: [
+      {
+        id: 1,
         name: 'super-admin',
         displayName: 'Super Admin',
         description: 'Super admin of the application, can do anything',
       },
     ],
   })
-  roles?: Role[];
+  sysroles?: SysRole[];
 }

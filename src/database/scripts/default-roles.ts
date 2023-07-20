@@ -1,4 +1,4 @@
-import Role from '../../modules/roles/entities/role.entity';
+import SysRole from '../../modules/roles/entities/sys-role.entity';
 import databaseConfiguration from '../database.configuration';
 import { Logger } from '@nestjs/common';
 import { defaultRoles } from '../../utils/roles';
@@ -12,13 +12,13 @@ const insertDefaultRoles = async () => {
     defaultRoles.forEach((role) => {
       const promise = new Promise<void>(async (resolve, reject) => {
         try {
-          const roleExists = await manager.findOne(Role, {
+          const roleExists = await manager.findOne(SysRole, {
             where: {
               name: role.name,
             },
           });
           if (!roleExists) {
-            await manager.insert(Role, role);
+            await manager.insert(SysRole, role);
             Logger.log(`Created role ${role.name}`);
           }
           resolve();

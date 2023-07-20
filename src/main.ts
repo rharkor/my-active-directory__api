@@ -54,7 +54,11 @@ async function bootstrap() {
         );
         if (!user) return false;
         //? Retrieve user roles
-        const roles = await rolesService.userHaveRole(user.id, ['super-admin']);
+        const roles = await rolesService.userHaveRole(
+          user.id,
+          ['super-admin'],
+          true,
+        );
         if (roles.length <= 0) return false;
         return true;
       } catch (e) {

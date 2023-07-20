@@ -12,7 +12,6 @@ export class FindAllResponseDto extends ApiPaginationResponse {
         displayName: 'Super admin',
         description: 'Super admin',
         color: '#000000',
-        deletable: true,
       },
     ],
   })

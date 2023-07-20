@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import Role from '../../roles/entities/role.entity';
 import Token from '../../auth/entities/token.entity';
+import SysRole from '../../roles/entities/sys-role.entity';
 
 @Entity()
 @Check(`"email" IS NOT NULL OR "username" IS NOT NULL`)
@@ -67,6 +68,12 @@ class User {
     },
   })
   activeRoles?: number;
+
+  @ManyToMany(() => SysRole, (role) => role.users, {
+    eager: true,
+  })
+  @JoinTable()
+  sysroles?: SysRole[];
 }
 
 export default User;

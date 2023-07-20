@@ -5,7 +5,6 @@ import {
   IsNotEmpty,
   IsString,
   IsOptional,
-  IsBoolean,
   IsHexColor,
 } from 'class-validator';
 
@@ -43,8 +42,4 @@ export class CreateDto {
     example: '#000000',
   })
   color?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  deletable?: boolean;
 }

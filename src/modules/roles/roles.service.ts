@@ -6,22 +6,22 @@ import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import User from '../users/entities/user.entity';
 import { CreateDto } from './dtos/create.dto';
 import { UpdateDto } from './dtos/update.dto';
+import SysRole from './entities/sys-role.entity';
 
 @Injectable()
 export class RolesService {
   constructor(
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(SysRole)
+    private sysRoleRepository: Repository<SysRole>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
 
   async create(createDto: CreateDto) {
     try {
-      return await this.roleRepository.save({
-        ...createDto,
-        deletable: true,
-      });
+      return await this.roleRepository.save(createDto);
     } catch (error) {
       if (error.code === '23505') {
         throw new BadRequestException('Role already exists');
@@ -51,7 +51,6 @@ export class RolesService {
         displayName: true,
         description: true,
         id: true,
-        deletable: true,
       },
       defaultSortBy: [['id', 'ASC']],
       defaultLimit: 20,
@@ -67,9 +66,23 @@ export class RolesService {
     });
   }
 
-  async userHaveRole(id: number, roles: string[]): Promise<Role[]> {
+  async findAllSysNoPagination(): Promise<SysRole[]> {
+    return this.sysRoleRepository.find({
+      select: ['name', 'color'],
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
+
+  async userHaveRole(
+    id: number,
+    roles: string[],
+    isSysRole = false,
+  ): Promise<Role[]> {
+    const repo = isSysRole ? this.sysRoleRepository : this.roleRepository;
     //? Select all roles that have the user with the given id
-    const qb = this.roleRepository
+    const qb = repo
       .createQueryBuilder('role')
       .leftJoin('role.users', 'user')
       .where('user.id = :id', { id })
@@ -78,9 +91,14 @@ export class RolesService {
     return qb.getMany();
   }
 
-  async findByUser(id: number, query: PaginateQuery): Promise<Paginated<Role>> {
+  async findByUser(
+    id: number,
+    query: PaginateQuery,
+    isSysRole = false,
+  ): Promise<Paginated<Role>> {
     //? Select all roles that have the user with the given id
-    const qb = this.roleRepository
+    const repo = isSysRole ? this.sysRoleRepository : this.roleRepository;
+    const qb = repo
       .createQueryBuilder('role')
       .leftJoin('role.users', 'user')
       .where('user.id = :id', { id });
@@ -92,7 +110,6 @@ export class RolesService {
         displayName: true,
         description: true,
         id: true,
-        deletable: true,
       },
     });
   }
@@ -105,8 +122,9 @@ export class RolesService {
     });
   }
 
-  async ensureRoleExists(name: string): Promise<Role> {
-    const role = await this.roleRepository.findOne({
+  async ensureRoleExists(name: string, isSysRole = false): Promise<Role> {
+    const repo = isSysRole ? this.sysRoleRepository : this.roleRepository;
+    const role = await repo.findOne({
       where: {
         name,
       },
@@ -115,22 +133,29 @@ export class RolesService {
     return role;
   }
 
-  async addRoleToUser(user: User, role: Role): Promise<User> {
-    if (!user.roles) user.roles = [role];
-    else user.roles.push(role);
-    return this.userRepository.save(user);
+  async addRoleToUser(
+    user: User,
+    role: Role,
+    isSysRole = false,
+  ): Promise<User> {
+    if (isSysRole) {
+      if (!user.sysroles) user.sysroles = [role];
+      else user.sysroles.push(role);
+      return this.userRepository.save(user);
+    } else {
+      if (!user.roles) user.roles = [role];
+      else user.roles.push(role);
+      return this.userRepository.save(user);
+    }
   }
 
   async delete(id: number) {
-    //* Ensure that the role is deletable
     const role = await this.roleRepository.findOne({
       where: {
         id,
       },
-      select: ['deletable'],
     });
     if (!role) throw new BadRequestException('Role not found');
-    if (!role.deletable) throw new BadRequestException('Role not deletable');
 
     return this.roleRepository.delete(id);
   }

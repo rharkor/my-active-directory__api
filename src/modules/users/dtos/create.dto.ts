@@ -92,8 +92,17 @@ export class CreateDto {
   @IsArray()
   @ApiProperty({
     description: 'Roles',
-    example: ['admin'],
+    example: ['example'],
     required: false,
   })
   roles?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'SysRoles',
+    example: ['example'],
+    required: false,
+  })
+  sysroles?: string[];
 }

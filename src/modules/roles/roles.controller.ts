@@ -61,6 +61,27 @@ export class RolesController {
 
   @Route({
     method: HttpMethod.Get,
+    path: 'sys/no-pagination',
+    isApiAvailable: true,
+    roles: ['super-admin', 'admin', 'service-account'],
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindAllNoPaginationResponseDto,
+      },
+      operation: {
+        summary: 'Get all sys no pagination',
+        description: 'Retrieve all sys roles without pagination',
+      },
+    },
+  })
+  async findAllSysNoPagination(): Promise<FindAllNoPaginationResponseDto> {
+    return { data: await this.rolesService.findAllSysNoPagination() };
+  }
+
+  @Route({
+    method: HttpMethod.Get,
     path: ':id',
     isApiAvailable: true,
     roles: ['super-admin', 'admin', 'service-account'],

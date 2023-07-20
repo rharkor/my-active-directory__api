@@ -20,11 +20,6 @@ class Role {
   description?: string;
 
   @Column({
-    default: true,
-  })
-  deletable: boolean;
-
-  @Column({
     nullable: true,
   })
   color?: string;

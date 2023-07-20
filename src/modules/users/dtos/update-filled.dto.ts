@@ -10,6 +10,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { DeepPartial } from 'typeorm';
 import Role from '@/modules/roles/entities/role.entity';
+import SysRole from '@/modules/roles/entities/sys-role.entity';
 
 export class UpdateFilledDto {
   @IsOptional()
@@ -83,10 +84,24 @@ export class UpdateFilledDto {
     example: [
       {
         id: 1,
-        name: 'admin',
+        name: 'example',
       },
     ],
     required: false,
   })
   roles?: DeepPartial<Role[]>;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'SysRoles',
+    example: [
+      {
+        id: 1,
+        name: 'super-admin',
+      },
+    ],
+    required: false,
+  })
+  sysroles?: DeepPartial<SysRole[]>;
 }

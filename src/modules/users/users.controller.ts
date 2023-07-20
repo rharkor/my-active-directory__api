@@ -71,6 +71,30 @@ export class UsersController {
     isApiAvailable: true,
     method: HttpMethod.Get,
     roles: ['super-admin', 'admin', 'service-account'],
+    path: ':id/sysroles',
+    swagger: {
+      responses: {
+        status: 200,
+        description: 'Success',
+        type: FindRolesResponseDto,
+      },
+      operation: {
+        summary: 'Get all sys roles',
+        description: 'Retrieve all sys roles of a user with pagination',
+      },
+    },
+  })
+  findSysRoles(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ): Promise<FindRolesResponseDto> {
+    return this.rolesService.findByUser(id, query, true);
+  }
+
+  @Route({
+    isApiAvailable: true,
+    method: HttpMethod.Get,
+    roles: ['super-admin', 'admin', 'service-account'],
     path: ':id',
     swagger: {
       responses: {
