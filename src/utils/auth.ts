@@ -1,7 +1,11 @@
 import { jwtConstants } from '@/modules/auth/constants';
 import Token from '@/modules/auth/entities/token.entity';
 import User from '@/modules/users/entities/user.entity';
-import { PayloadType } from '@/types/auth';
+import {
+  PayloadType,
+  RequestWithServiceAccount,
+  RequestWithUser,
+} from '@/types/auth';
 import { JwtService } from '@nestjs/jwt';
 import { hash as bhash, compare } from 'bcrypt';
 import jwtDecode from 'jwt-decode';
@@ -92,4 +96,13 @@ export const hash = async (value: string, saltOrRounds: string | number) => {
 export const bcryptCompare = async (value: string, hash: string) => {
   const preHashed = crypto.HmacSHA256(value, PASSWORD_HASHER).toString();
   return compare(preHashed, hash);
+};
+
+export const userIsNotItself = (
+  req: RequestWithServiceAccount | RequestWithUser,
+  id: number,
+) => {
+  return (
+    !('user' in req) || !req.user || !('id' in req.user) || req.user.id !== id
+  );
 };

@@ -23,6 +23,7 @@ import {
   hash,
   signToken,
   updateRefreshToken,
+  userIsNotItself,
 } from '@/utils/auth';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateResponseDto } from './dtos/update-response.dto';
@@ -185,10 +186,7 @@ export class UsersService {
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
       highestRole !== 'super-admin' &&
-      (!('user' in req) ||
-        !req.user ||
-        !('id' in req.user) ||
-        req.user.id !== id)
+      userIsNotItself(req, id)
     )
       throw new BadRequestException('You cannot update other admins');
 
@@ -317,10 +315,7 @@ export class UsersService {
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
       highestRole !== 'super-admin' &&
-      (!('user' in req) ||
-        !req.user ||
-        !('id' in req.user) ||
-        req.user.id !== id)
+      userIsNotItself(req, id)
     )
       throw new BadRequestException('You cannot update other admins');
 
@@ -385,7 +380,7 @@ export class UsersService {
     if (removeDto.force) {
       if (highestRole === 'user')
         throw new BadRequestException('You cannot force delete users');
-
+    } else {
       if (!removeDto.username && !removeDto.email)
         //? Verify the provided username/email and password
         throw new BadRequestException('Username or email is required');
@@ -407,15 +402,12 @@ export class UsersService {
       if (!samePassword) throw new BadRequestException('Invalid password');
     }
 
-    // Admin cannot delete other admins or super-admins
+    //? Admin cannot delete other admins or super-admins
     const userHighestRole = findHighestRole(userToDelete.roles);
     if (
       (userHighestRole === 'admin' || userHighestRole === 'super-admin') &&
       highestRole !== 'super-admin' &&
-      (!('user' in req) ||
-        !req.user ||
-        !('id' in req.user) ||
-        req.user.id !== id)
+      userIsNotItself(req, id)
     )
       throw new BadRequestException('You cannot delete other admins');
 
