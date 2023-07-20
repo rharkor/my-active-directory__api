@@ -14,6 +14,7 @@ import { ApiAuthGuard } from './modules/auth/api-auth.guard';
 import { RolesProvider } from './guards/roles.guard';
 import { RolesModule } from './modules/roles/roles.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
+import { ProjectModule } from './modules/projects/project.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     RolesModule,
     ServiceAccountModule,
     UploadsModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [

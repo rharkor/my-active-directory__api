@@ -1,17 +1,22 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import ServiceAccount from './entities/service-account.entity';
 import { CreateServiceAccountDto } from './dtos/create.dto';
 import { UpdateServiceAccountDto } from './dtos/update.dto';
 import { v4 as uuid } from 'uuid';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
+import { CreateServiceAccountDtoFilled } from './dtos/create-filled.dto';
+import { UpdateServiceAccountDtoFilled } from './dtos/update-filled.dto';
+import Project from '../projects/entities/project.entity';
 
 @Injectable()
 export class ServiceAccountService {
   constructor(
     @InjectRepository(ServiceAccount)
     private serviceAccountRepository: Repository<ServiceAccount>,
+    @InjectRepository(Project)
+    private projectsRepository: Repository<Project>,
   ) {}
 
   findAll(query: PaginateQuery): Promise<Paginated<ServiceAccount>> {
@@ -43,8 +48,26 @@ export class ServiceAccountService {
 
   async create(createServiceAccountDto: CreateServiceAccountDto) {
     try {
-      return await this.serviceAccountRepository.save({
+      const createServiceAccountDtoFilled: CreateServiceAccountDtoFilled = {
         ...createServiceAccountDto,
+        projects: undefined,
+      };
+      //? If projects is not empty, then we need to find the projects
+      if (createServiceAccountDto.projects?.length) {
+        const projects = await this.projectsRepository.find({
+          where: {
+            name: In(createServiceAccountDto.projects),
+          },
+          select: ['id'],
+        });
+        if (projects.length !== createServiceAccountDto.projects.length) {
+          throw new BadRequestException('Invalid projects');
+        }
+        createServiceAccountDtoFilled.projects = projects;
+      }
+
+      return await this.serviceAccountRepository.save({
+        ...createServiceAccountDtoFilled,
         token: uuid(),
       });
     } catch (error) {
@@ -55,8 +78,29 @@ export class ServiceAccountService {
     }
   }
 
-  update(id: number, updateServiceAccountDto: UpdateServiceAccountDto) {
-    return this.serviceAccountRepository.update(id, updateServiceAccountDto);
+  async update(id: number, updateServiceAccountDto: UpdateServiceAccountDto) {
+    const updateServiceAccountDtoFilled: UpdateServiceAccountDtoFilled = {
+      ...updateServiceAccountDto,
+      projects: undefined,
+    };
+    //? If projects is not empty, then we need to find the projects
+    if (updateServiceAccountDto.projects?.length) {
+      const projects = await this.projectsRepository.find({
+        where: {
+          name: In(updateServiceAccountDto.projects),
+        },
+        select: ['id'],
+      });
+      if (projects.length !== updateServiceAccountDto.projects.length) {
+        throw new BadRequestException('Invalid projects');
+      }
+      updateServiceAccountDtoFilled.projects = projects;
+    }
+
+    return this.serviceAccountRepository.update(
+      id,
+      updateServiceAccountDtoFilled,
+    );
   }
 
   async updateToken(id: number) {

@@ -11,6 +11,7 @@ import {
 import Role from '../../roles/entities/role.entity';
 import Token from '../../auth/entities/token.entity';
 import SysRole from '../../roles/entities/sys-role.entity';
+import Project from '../../../modules/projects/entities/project.entity';
 
 @Entity()
 @Check(`"email" IS NOT NULL OR "username" IS NOT NULL`)
@@ -74,6 +75,12 @@ class User {
   })
   @JoinTable()
   sysroles?: SysRole[];
+
+  @ManyToMany(() => Project, (project) => project.users, {
+    eager: true,
+  })
+  @JoinTable()
+  projects?: Project[];
 }
 
 export default User;

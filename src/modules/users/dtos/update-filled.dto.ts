@@ -11,6 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DeepPartial } from 'typeorm';
 import Role from '@/modules/roles/entities/role.entity';
 import SysRole from '@/modules/roles/entities/sys-role.entity';
+import Project from '@/modules/projects/entities/project.entity';
 
 export class UpdateFilledDto {
   @IsOptional()
@@ -104,4 +105,18 @@ export class UpdateFilledDto {
     required: false,
   })
   sysroles?: DeepPartial<SysRole[]>;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'Projects',
+    example: [
+      {
+        id: '1',
+        name: 'my-app',
+      },
+    ],
+    required: false,
+  })
+  projects?: DeepPartial<Pick<Project, 'id'>[]>;
 }

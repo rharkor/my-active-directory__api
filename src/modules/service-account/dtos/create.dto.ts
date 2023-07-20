@@ -1,6 +1,7 @@
 import { slugRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -35,4 +36,13 @@ export class CreateServiceAccountDto {
     required: false,
   })
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'Projects',
+    example: ['my-app'],
+    required: false,
+  })
+  projects?: string[];
 }

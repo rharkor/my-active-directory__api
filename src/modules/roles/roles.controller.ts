@@ -125,7 +125,7 @@ export class RolesController {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/CreateRoleDto',
+                $ref: '#/components/schemas/CreateDto',
               },
             },
           },

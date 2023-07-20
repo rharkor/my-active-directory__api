@@ -32,6 +32,7 @@ import Token from '../auth/entities/token.entity';
 import { RemoveDto } from './dtos/remove.dto';
 import { CreateFilledDto } from './dtos/create-filled.dto';
 import SysRole from '../roles/entities/sys-role.entity';
+import Project from '../projects/entities/project.entity';
 
 @Injectable()
 export class UsersService {
@@ -44,6 +45,8 @@ export class UsersService {
     private sysRoleRepository: Repository<SysRole>,
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
+    @InjectRepository(Project)
+    private projectsRepository: Repository<Project>,
     private jwtService: JwtService,
   ) {}
 
@@ -126,6 +129,7 @@ export class UsersService {
       ...user,
       roles: undefined,
       sysroles: undefined,
+      projects: undefined,
     };
     if (user.roles) {
       const roles = await this.roleRepository.findBy({
@@ -148,6 +152,21 @@ export class UsersService {
 
       //? Set sysroles
       userFilled.sysroles = sysroles;
+    }
+
+    //* Check for projects
+    if (user.projects) {
+      const projects = await this.projectsRepository.find({
+        where: {
+          name: In(user.projects),
+        },
+        select: ['id'],
+      });
+      if (projects.length !== user.projects.length)
+        throw new BadRequestException('Invalid projects');
+
+      //? Set projects
+      userFilled.projects = projects;
     }
 
     const userObject = this.userRepository.create(userFilled);
@@ -194,6 +213,7 @@ export class UsersService {
       ...user,
       roles: undefined,
       sysroles: undefined,
+      projects: undefined,
     };
 
     //* Check if all roles exist
@@ -247,6 +267,21 @@ export class UsersService {
               .map((r) => r.name)
               .join(', ')}`,
           );
+      }
+
+      //* Check for projects
+      if (user.projects) {
+        const projects = await this.projectsRepository.find({
+          where: {
+            name: In(user.projects),
+          },
+          select: ['id'],
+        });
+        if (projects.length !== user.projects.length)
+          throw new BadRequestException('Invalid projects');
+
+        //? Set projects
+        userFilled.projects = projects;
       }
 
       //? Set sysroles

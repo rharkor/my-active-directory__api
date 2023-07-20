@@ -12,6 +12,7 @@ import { passwordRegex } from '@/utils/auth';
 import { DeepPartial } from 'typeorm';
 import Role from '@/modules/roles/entities/role.entity';
 import SysRole from '@/modules/roles/entities/sys-role.entity';
+import Project from '@/modules/projects/entities/project.entity';
 
 export class CreateFilledDto {
   @IsOptional()
@@ -108,4 +109,13 @@ export class CreateFilledDto {
     required: false,
   })
   sysroles?: DeepPartial<SysRole[]>;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'Projects',
+    example: [{ id: 1, name: 'my-app' }],
+    required: false,
+  })
+  projects?: DeepPartial<Pick<Project, 'id'>[]>;
 }

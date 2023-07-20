@@ -10,10 +10,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from '../auth/constants';
 import Token from '../auth/entities/token.entity';
 import SysRole from '../roles/entities/sys-role.entity';
+import Project from '../projects/entities/project.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, SysRole, Token]),
+    TypeOrmModule.forFeature([User, Role, SysRole, Token, Project]),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: jwtConstants.expiresIn },

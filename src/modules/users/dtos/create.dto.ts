@@ -105,4 +105,13 @@ export class CreateDto {
     required: false,
   })
   sysroles?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: 'Projects',
+    example: ['example'],
+    required: false,
+  })
+  projects?: string[];
 }

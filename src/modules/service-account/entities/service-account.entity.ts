@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import Project from '../../../modules/projects/entities/project.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 class ServiceAccount {
@@ -20,6 +27,12 @@ class ServiceAccount {
     unique: true,
   })
   token: string;
+
+  @ManyToMany(() => Project, (project) => project.serviceAccounts, {
+    eager: true,
+  })
+  @JoinTable()
+  projects?: Project[];
 }
 
 export default ServiceAccount;

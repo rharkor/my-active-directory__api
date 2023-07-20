@@ -11,7 +11,7 @@ import { ApiErrorResponse } from '@/types';
 import { FindOneResponseDto } from './dtos/find-one-response.dto';
 import { UpdateResponseDto } from './dtos/update-response.dto';
 import { RemoveResponseDto } from './dtos/remove-response.dto';
-import { UpdateTokenResponseDto } from './dtos/update-token.dto';
+import { UpdateTokenResponseDto } from './dtos/update-token-response.dto';
 
 @Controller('service-accounts')
 @ApiTags('service-accounts')

@@ -1,3 +1,4 @@
+import Project from '@/modules/projects/entities/project.entity';
 import { slugRegex } from '@/utils/auth';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -7,8 +8,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { DeepPartial } from 'typeorm';
 
-export class UpdateServiceAccountDto {
+export class UpdateServiceAccountDtoFilled {
   @IsString()
   @IsOptional()
   @MinLength(5)
@@ -38,8 +40,13 @@ export class UpdateServiceAccountDto {
   @IsOptional()
   @ApiProperty({
     description: 'Projects',
-    example: ['my-app'],
+    example: [
+      {
+        id: '1',
+        name: 'my-app',
+      },
+    ],
     required: false,
   })
-  projects?: string[];
+  projects?: DeepPartial<Pick<Project, 'id'>[]>;
 }

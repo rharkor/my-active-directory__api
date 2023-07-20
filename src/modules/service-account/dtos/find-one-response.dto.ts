@@ -15,4 +15,12 @@ export class FindOneResponseDto {
     description: 'Description',
   })
   description?: string;
+
+  @ApiProperty({
+    description: 'Projects',
+  })
+  projects?: {
+    id: number;
+    name: string;
+  }[];
 }

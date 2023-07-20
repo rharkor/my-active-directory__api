@@ -1,3 +1,4 @@
+import Project from '@/modules/projects/entities/project.entity';
 import Role from '@/modules/roles/entities/role.entity';
 import SysRole from '@/modules/roles/entities/sys-role.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -58,4 +59,14 @@ export class FindOneResponseDto {
     ],
   })
   sysroles?: SysRole[];
+
+  @ApiProperty({
+    example: [
+      {
+        id: 1,
+        name: 'my-app',
+      },
+    ],
+  })
+  projects?: Project[];
 }
